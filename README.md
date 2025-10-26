@@ -85,4 +85,4 @@ If you’ve built something similar or adapted SmartFuseBox for your own project
 
 ## 📜 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+GNU General Public License v3.0 (GPLv3) — see [LICENSE](LICENSE) for details.
