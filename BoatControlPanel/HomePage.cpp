@@ -8,16 +8,16 @@ HomePage::HomePage(Stream* serialPort, SerialCommandManager* commandMgrLink, Ser
 
 void HomePage::begin()
 {
-    sendCommand("page 0"); // ensure we are on page 0
+    sendCommand(PageName); // ensure we are on page 0
     updateTemperature();
     updateHumidity();
     updateBearing();
     updateSpeed();
 
-	setPicture("b1", BTN_COLOR_GREY); // Deck Lights button grey
-	setPicture("b2", BTN_COLOR_GREY); // Bilge Pump button grey
-	setPicture("b3", BTN_COLOR_GREY); // Nav Lights button grey
-    setPicture("b4", BTN_COLOR_GREY); // Horn button grey
+	setPicture("b1", BTN_COLOR_GREY); 
+	setPicture("b2", BTN_COLOR_GREY); 
+	setPicture("b3", BTN_COLOR_GREY); 
+    setPicture("b4", BTN_COLOR_GREY); 
     _dangerControlShown = false;
 	_compassTempAboveNorm = 0;
 
