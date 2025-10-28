@@ -6,13 +6,14 @@
 
 #include "Config.h"
 
+const char PageName[] = "page 0";
 const float CompassTemperatureWarningValue = 35;
-const String ControlHumidityControl = "t3";
-const String ControlTemperatureControl = "t2";
-const String ControlBearingText = "t6";
-const String ControlBearingDirection = "t4";
-const String ControlSpeed = "t5";
-const String ControlBoatName = "t0";
+const char ControlHumidityControl[] = "t3";
+const char ControlTemperatureControl[] = "t2";
+const char ControlBearingText[] = "t6";
+const char ControlBearingDirection[] = "t4";
+const char ControlSpeed[] = "t5";
+const char ControlBoatName[] = "t0";
 
 // Update type constants for HomePage external updates
 enum class HomePageUpdateType : uint8_t {

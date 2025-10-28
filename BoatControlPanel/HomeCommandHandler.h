@@ -22,20 +22,20 @@ public:
 
         if (command == "HUM")
         {
-        if (paramCount == 1 && _homePage && _computerCommandManager)
-        {
-            String token = params[0].value;
+            if (paramCount == 1 && _homePage && _computerCommandManager)
+            {
+                String token = params[0].value;
 
-            if (token.length() == 0)
-                token = params[0].key;
+                if (token.length() == 0)
+                    token = params[0].key;
 
-            token.trim();
-            _homePage->setHumidity(token.toFloat());
-        }
-        else if (_computerCommandManager)
-        {
-            _computerCommandManager->sendError("Invalid float param", "HUMIDITY");
-        }
+                token.trim();
+                _homePage->setHumidity(token.toFloat());
+            }
+            else if (_computerCommandManager)
+            {
+                _computerCommandManager->sendError("Invalid float param", "HUMIDITY");
+            }
         }
         else if (command == "TMP")
         {
