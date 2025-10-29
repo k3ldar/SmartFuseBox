@@ -74,6 +74,7 @@
     <ProjectCapability Include="VisualMicroLinux" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseBoatPage.cpp" />
     <ClCompile Include="BaseCommandHandler.cpp" />
     <ClCompile Include="BoatControlPanel.ino">
       <FileType>CppCode</FileType>
@@ -107,6 +108,7 @@
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
     <ClInclude Include="BaseCommandHandler.h" />
+    <ClInclude Include="BoatControlPanel\BaseBoatPage.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="ConfigCommandHandler.h" />
     <ClInclude Include="ConfigManager.h" />

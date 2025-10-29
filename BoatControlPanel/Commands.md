@@ -1,6 +1,14 @@
 ﻿# Communication Commands
 The following sections indicate the types of commands that can be sent to the Boat Control Panel, with examples and purpose.
 
+## System Commands
+These are commands used to configure the system settings and can only be sent from a computer, they are not used for internal communication.
+
+| Command | Example | Purpose |
+|---|---|---|
+| `F0` — Heart beat | `F0` | Send at rated intervals, if no ACK received indicates there is no connection available between control panel and fuse box. No params. |
+| `F1` — | `F1` | Unused |
+
 ## Configuration Commands
 These are commands used to configure the system settings and can only be sent from a computer, they are not used for internal communication.
 
@@ -20,6 +28,7 @@ Common error responses you may see: `Missing param`, `Missing params`, `Missing 
 
 ## Acknowldement Commands
 These commands are used in response to receiving a command.
+
 | Command | Example | Purpose |
 |---|---|---|
 | `ACK` — Acknowledement | `ACK:C4=Index out of range` | Indicates that the C4 command was processed and the index specified was out of range. |
@@ -27,6 +36,7 @@ These commands are used in response to receiving a command.
 
 ## Relay Control Commands
 These commands are used to control the relays on the Boat Control Panel. Commands can be sent from a computer or generated internally by the Boat Control Panel.
+
 | Command | Example | Purpose |
 |---|---|---|
 | `R0` — Turn All Off | `R0` | Indicates that the C4 command was processed and the index specified was out of range. |
@@ -34,3 +44,13 @@ These commands are used to control the relays on the Boat Control Panel. Command
 | `R2` — Retrieve States | `R2` | Retrieve the state of all relays. |
 | `R3` — Set Relay State | `R3:3=1` (turn on relay 3) — `R3:5=0` (turn off relay 5) | Set the state of a specific relay. Param format: `<idx>=<state>`. `idx` must be 0..7 (`RELAY_COUNT`). `state` must be `0` (off) or `1` (on). |
 | `R4` — Relay State Get | `R4:3` (retrieves status of relay 3) — `R4:5` (returns status of relay 5). Param format: `<idx>`. `idx` must be 0..7 (`RELAY_COUNT`). |
+
+## Sensor Commands
+These commands are used to send sensor data from the Boat Control Panel to a computer.
+
+| Command | Example | Purpose |
+|---|---|---|
+| `S0` — Temperature | `S0:Temp=72.5` | Send temperature sensor data. Param format: `<sensor>=<value>`. |
+| `S1` — Humidity | `S1:Humidity=55.2` | Send humidity sensor data. Param format: `<sensor>=<value>`. |
+| `S2` — Voltage | `S2:Voltage=12.6` | Send voltage sensor data. Param format: `<sensor>=<value>`. |
+| `S3` — Current | `S3:Current=3.4` | Send current sensor data. Param format: `<sensor>=<value>`. |

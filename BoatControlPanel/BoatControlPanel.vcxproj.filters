@@ -55,6 +55,9 @@
     <ClCompile Include="BaseCommandHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BaseBoatPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.BoatControlPanel.vsarduino.h">
@@ -73,6 +76,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BaseCommandHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoatControlPanel\BaseBoatPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

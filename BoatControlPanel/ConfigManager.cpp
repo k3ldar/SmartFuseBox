@@ -84,7 +84,7 @@ void ConfigManager::resetToDefaults()
     // Default home page mapping: first four relays visible in order
     for (uint8_t i = 0; i < HOME_BUTTONS; ++i) {
         _cfg.homePageMapping[i] = i; // map slot i -> relay i
-		_cfg.homePageButtonImage[i] = BTN_COLOR_GREY; // default color
+		_cfg.homePageButtonImage[i] = IMG_BTN_COLOR_GREY; // default color
     }
 
     // compute checksum

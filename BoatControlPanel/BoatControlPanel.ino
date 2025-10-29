@@ -74,7 +74,8 @@ void setup()
     bool gotConfig = ConfigManager::load();
     homePage.configSet(ConfigManager::getPtr());
 
-    if (!compass.begin()) {
+    if (!compass.begin())
+    {
       commandMgrComputer.sendError("INIT", "Compass Failed");
       while (1) delay(100);
     }

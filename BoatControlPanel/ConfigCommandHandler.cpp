@@ -90,7 +90,7 @@ void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 return;
             }
 
-            if ((relay < 0 || relay >= (int)RELAY_COUNT) && relay != BTN_COLOR_DEFAULT)
+            if ((relay < 0 || relay >= (int)RELAY_COUNT) && relay != IMG_BTN_COLOR_DEFAULT)
             {
                 sendAckErr(sender, cmd, "Relay out of range (or 255 to clear)", &params[0]);
                 return;
@@ -121,7 +121,7 @@ void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 return;
             }
             
-            if ((buttonColor < BTN_COLOR_BLUE || buttonColor > (int)BTN_COLOR_YELLOW) && buttonColor != BTN_COLOR_DEFAULT)
+            if ((buttonColor < IMG_BTN_COLOR_BLUE || buttonColor > (int)IMG_BTN_COLOR_YELLOW) && buttonColor != IMG_BTN_COLOR_DEFAULT)
             {
                 sendAckErr(sender, cmd, "Button out of range (or 255 to clear)", &params[0]);
                 return;
