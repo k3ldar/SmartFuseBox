@@ -6,7 +6,7 @@
 
 
 // Update type constants for HomePage external updates
-enum class HomePageUpdateType : uint8_t {
+enum class PageUpdateType : uint8_t {
     None = 0x00,
     RelayState = 0x01,
 };

@@ -125,7 +125,7 @@ void HomePage::handleText(String text)
 
 void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
 {
-    if (updateType == static_cast<uint8_t>(HomePageUpdateType::RelayState) && data != nullptr)
+    if (updateType == static_cast<uint8_t>(PageUpdateType::RelayState) && data != nullptr)
     {
         const RelayStateUpdate* update = static_cast<const RelayStateUpdate*>(data);
 

@@ -69,7 +69,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
                         RelayStateUpdate update = { static_cast<uint8_t>(relayIndex), isOn };
                         
                         // Notify the page using the generic handleExternalUpdate with integer type
-                        currentPage->handleExternalUpdate(static_cast<uint8_t>(HomePageUpdateType::RelayState), &update);
+                        currentPage->handleExternalUpdate(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
                     }
                 }
             }
