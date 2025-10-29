@@ -1,7 +1,9 @@
 #include "HomePage.h"
 
-HomePage::HomePage(Stream* serialPort, SerialCommandManager* commandMgrLink, SerialCommandManager* commandMgrComputer)
-    : BaseBoatPage(serialPort), _commandMgrLink(commandMgrLink), _commandMgrComputer(commandMgrComputer)
+HomePage::HomePage(Stream* serialPort,
+                   SerialCommandManager* commandMgrLink,
+                   SerialCommandManager* commandMgrComputer)
+    : BaseBoatPage(serialPort, commandMgrLink, commandMgrComputer)
 {
     
 }
@@ -38,8 +40,15 @@ void HomePage::refresh()
     {
         _dangerControlShown = !_dangerControlShown;
 
-        _commandMgrLink->sendCommand("DNGR", "Blink:" + String(_dangerControlShown));
+        SerialCommandManager* commandMgrLink = getCommandMgrLink();
+        if (commandMgrLink)
+        {
+            commandMgrLink->sendCommand("DNGR", "Blink:" + String(_dangerControlShown));
+        }
     }
+
+    // Update heartbeat mechanism
+    updateHeartbeat(millis());
 }
 
 // Handle touch events for buttons
@@ -92,13 +101,21 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
     // Get the relay name from config
     String relayName = String(config->relayNames[relayIndex]);
 
+    SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
+
     if (eventType == EventPress)
     {
-        _commandMgrComputer->sendDebug(relayName + " pressed", "HomePage");
+        if (commandMgrComputer)
+        {
+            commandMgrComputer->sendDebug(relayName + " pressed", "HomePage");
+        }
     }
     else if (eventType == EventRelease)
     {
-        _commandMgrComputer->sendDebug(relayName + " released", "HomePage");
+        if (commandMgrComputer)
+        {
+            commandMgrComputer->sendDebug(relayName + " released", "HomePage");
+        }
 
         // Toggle button state
         _buttonOn[buttonIndex] = !_buttonOn[buttonIndex];
@@ -113,7 +130,11 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 
         // Send relay command
         String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? ":ON" : ":OFF");
-        _commandMgrLink->sendCommand("R3", cmd);
+        SerialCommandManager* commandMgrLink = getCommandMgrLink();
+        if (commandMgrLink)
+        {
+            commandMgrLink->sendCommand("R3", cmd);
+        }
     }
 }
 
@@ -125,6 +146,9 @@ void HomePage::handleText(String text)
 
 void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
 {
+    // Call base class first to handle heartbeat ACKs
+    BaseBoatPage::handleExternalUpdate(updateType, data);
+
     if (updateType == static_cast<uint8_t>(PageUpdateType::RelayState) && data != nullptr)
     {
         const RelayStateUpdate* update = static_cast<const RelayStateUpdate*>(data);
@@ -147,11 +171,12 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
                 setPicture2(buttonName, newColor);
 
                 // Log the update for debugging
-                if (_commandMgrComputer)
+                SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
+                if (commandMgrComputer)
                 {
                     Config* config = getConfig();
                     String relayName = config ? String(config->relayNames[update->relayIndex]) : String(update->relayIndex);
-                    _commandMgrComputer->sendDebug(
+                    commandMgrComputer->sendDebug(
                         relayName + " state updated to " + (update->isOn ? "ON" : "OFF"),
                         "HomePage"
                     );
@@ -161,19 +186,33 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
             }
         }
     }
-    else if (updateType == static_cast<uint8_t>(PageUpdateType::HeartbeatAck))
+}
+
+void HomePage::onConnectionStateChanged(bool connected)
+{
+    // Handle connection state changes
+    SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
+    
+    if (connected)
     {
-        // Handle heartbeat acknowledgement
-        // The connection is alive - you can update UI elements here if needed
-        // For example: clear connection warning indicator, update status icon, etc.
-        if (_commandMgrComputer)
+        if (commandMgrComputer)
         {
-            _commandMgrComputer->sendDebug("Heartbeat OK", "HomePage");
+            commandMgrComputer->sendDebug("Link connection established", "HomePage");
         }
-        
-        // Example: If you have a connection status indicator on the page, you could update it here:
-        // setPicture("connectionStatus", IMG_CONNECTED);
-        // Or clear any warning state related to connection loss
+        // Example: Update UI to show connection is active
+        // setPicture("connectionIndicator", IMG_CONNECTED);
+        // sendText("connectionStatus", "Connected");
+    }
+    else
+    {
+        if (commandMgrComputer)
+        {
+            commandMgrComputer->sendDebug("Link connection lost", "HomePage");
+        }
+        // Example: Update UI to show connection is lost
+        // setPicture("connectionIndicator", IMG_DISCONNECTED);
+        // sendText("connectionStatus", "Disconnected");
+        // You might also want to show a warning or disable relay controls
     }
 }
 

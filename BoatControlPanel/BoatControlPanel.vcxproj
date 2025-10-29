@@ -121,6 +121,7 @@
       </SubType>
     </None>
     <None Include="docs\ExternalUpdatePattern.md" />
+    <None Include="HEARTBEAT_IMPLEMENTATION.md" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

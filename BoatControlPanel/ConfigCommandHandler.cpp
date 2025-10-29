@@ -29,7 +29,8 @@ void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 name = params[0].key;
 
             name.trim();
-            if (name.length() == 0) {
+            if (name.length() == 0)
+            {
                 sendAckErr(sender, cmd, "Empty name", &params[0]);
                 return;
             }

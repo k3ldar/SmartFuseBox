@@ -85,5 +85,6 @@
   <ItemGroup>
     <None Include="Commands.md" />
     <None Include="docs\ExternalUpdatePattern.md" />
+    <None Include="HEARTBEAT_IMPLEMENTATION.md" />
   </ItemGroup>
 </Project>

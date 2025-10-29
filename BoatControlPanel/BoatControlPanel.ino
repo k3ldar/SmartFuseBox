@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
@@ -200,11 +199,14 @@ void reconnectSerial(unsigned long now)
 #include <Arduino.h>
 #include <Wire.h>
 
-void i2cScan() {
+void i2cScan()
+{
   Serial.println("I2C scan:");
-  for (uint8_t addr = 1; addr < 127; ++addr) {
+  for (uint8_t addr = 1; addr < 127; ++addr)
+  {
     Wire.beginTransmission(addr);
-    if (Wire.endTransmission() == 0) {
+    if (Wire.endTransmission() == 0)
+    {
       Serial.print("  Found device at 0x");
       if (addr < 16) Serial.print("0");
       Serial.println(addr, HEX);
@@ -213,9 +215,13 @@ void i2cScan() {
   }
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
-  while (!Serial) { delay(5); }
+  while (!Serial)
+  {
+    delay(5);
+  }
   Wire.begin();
   delay(50);
 
@@ -223,7 +229,8 @@ void setup() {
 
 }
 
-void loop() {
+void loop()
+{
   // empty for diagnostic run
   delay(1000);
 }

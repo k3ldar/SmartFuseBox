@@ -40,14 +40,12 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
             // Check for heartbeat acknowledgement (F0=ok)
             if (key == "F0" && val.equalsIgnoreCase("ok"))
             {
-                // Notify the current page about the heartbeat acknowledgement
+                // Notify the current page about the heartbeat acknowledgement via handleExternalUpdate
                 if (_nextionControl)
                 {
                     BaseDisplayPage* currentPage = _nextionControl->getCurrentPage();
                     if (currentPage)
                     {
-                        // Notify the page using the generic handleExternalUpdate
-                        // No additional data needed for heartbeat ack, pass nullptr
                         currentPage->handleExternalUpdate(static_cast<uint8_t>(PageUpdateType::HeartbeatAck), nullptr);
                     }
                 }

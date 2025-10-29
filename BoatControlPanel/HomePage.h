@@ -27,8 +27,6 @@ const uint8_t ButtonWarning = 27;
 
 class HomePage : public BaseBoatPage {
 private:
-    SerialCommandManager* _commandMgrLink;
-    SerialCommandManager* _commandMgrComputer;
     float _lastTemp = NAN;
     float _lastHumidity = NAN;
     float _lastBearing = NAN;
@@ -51,6 +49,7 @@ private:
     void updateDirection();
 
     uint8_t getButtonColor(uint8_t buttonIndex, bool isOn);
+
 protected:
     // Required overrides
     uint8_t getPageId() const override { return 0; }
@@ -61,9 +60,12 @@ protected:
     void handleTouch(uint8_t compId, uint8_t eventType) override;
     void handleText(String text) override;
     void handleExternalUpdate(uint8_t updateType, const void* data) override;
+    void onConnectionStateChanged(bool connected) override;
 
 public:
-    explicit HomePage(Stream* serialPort, SerialCommandManager* commandMgrLink, SerialCommandManager* commandMgrComputer);
+    explicit HomePage(Stream* serialPort, 
+                     SerialCommandManager* commandMgrLink = nullptr,
+                     SerialCommandManager* commandMgrComputer = nullptr);
 
     // Override configUpdated from BaseBoatPage
     void configUpdated() override;
