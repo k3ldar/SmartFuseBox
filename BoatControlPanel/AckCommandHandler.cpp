@@ -37,6 +37,28 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
             if (key.length() == 0)
                 continue;
 
+            // Check for heartbeat acknowledgement (F0=ok)
+            if (key == "F0" && val.equalsIgnoreCase("ok"))
+            {
+                // Notify the current page about the heartbeat acknowledgement
+                if (_nextionControl)
+                {
+                    BaseDisplayPage* currentPage = _nextionControl->getCurrentPage();
+                    if (currentPage)
+                    {
+                        // Notify the page using the generic handleExternalUpdate
+                        // No additional data needed for heartbeat ack, pass nullptr
+                        currentPage->handleExternalUpdate(static_cast<uint8_t>(PageUpdateType::HeartbeatAck), nullptr);
+                    }
+                }
+
+                if (sender)
+                {
+                    sender->sendDebug("Heartbeat ACK received", "ACK");
+                }
+                continue;
+            }
+
             // If we get an Rn=ok (echo for the command) treat it as a hint to refresh UI
             if (key.startsWith("R") && val.equalsIgnoreCase("ok"))
             {

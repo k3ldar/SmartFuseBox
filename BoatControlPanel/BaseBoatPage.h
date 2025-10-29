@@ -8,7 +8,9 @@
 // Update type constants for HomePage external updates
 enum class PageUpdateType : uint8_t {
     None = 0x00,
-    RelayState = 0x01,
+	Warning = 0x01,
+    RelayState = 0x02,
+    HeartbeatAck = 0x03,  // Heartbeat acknowledgement received (F0=ok)
 };
 
 // Data structure for relay state updates

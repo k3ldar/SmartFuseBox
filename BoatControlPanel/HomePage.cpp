@@ -161,6 +161,20 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
             }
         }
     }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::HeartbeatAck))
+    {
+        // Handle heartbeat acknowledgement
+        // The connection is alive - you can update UI elements here if needed
+        // For example: clear connection warning indicator, update status icon, etc.
+        if (_commandMgrComputer)
+        {
+            _commandMgrComputer->sendDebug("Heartbeat OK", "HomePage");
+        }
+        
+        // Example: If you have a connection status indicator on the page, you could update it here:
+        // setPicture("connectionStatus", IMG_CONNECTED);
+        // Or clear any warning state related to connection loss
+    }
 }
 
 // --- Public setters ---
