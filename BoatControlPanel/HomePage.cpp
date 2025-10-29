@@ -380,7 +380,8 @@ uint8_t HomePage::getButtonColor(uint8_t buttonIndex, bool isOn)
         uint8_t configuredColor = config->homePageButtonImage[buttonIndex];
         if (configuredColor != IMG_BTN_COLOR_DEFAULT &&
             configuredColor >= IMG_BTN_COLOR_BLUE &&
-            configuredColor <= IMG_BTN_COLOR_YELLOW) {
+            configuredColor <= IMG_BTN_COLOR_YELLOW)
+        {
             return configuredColor;
         }
         // Default ON color is blue

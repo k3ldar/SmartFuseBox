@@ -22,13 +22,15 @@ TLVCompass::TLVCompass(int filterSize)
     for (int i = 0; i < 32; i++) headingBuffer[i] = 0;
 }
 
-bool TLVCompass::begin() {
+bool TLVCompass::begin()
+{
     Wire.begin();
     Wire.setClock(100000);
     delay(500);
 
     // Magnetometer
-    if (!sensor.begin()) {
+    if (!sensor.begin())
+    {
         Serial.println("TLx493D init failed!");
         return false;
     }
@@ -37,7 +39,8 @@ bool TLVCompass::begin() {
 
     // MPU6050
     delay(500);
-    if (!mpu.begin()) {
+    if (!mpu.begin())
+    {
         Serial.println("MPU6050 init failed!");
         return false;
     }
@@ -51,12 +54,14 @@ bool TLVCompass::begin() {
     return true;
 }
 
-bool TLVCompass::update(unsigned long now) {
+bool TLVCompass::update(unsigned long now)
+{
     double dt = (now - lastUpdate) / 1000.0;
     lastUpdate = now;
 
     // Magnetometer
-    if (!sensor.getTemperature(&temp) || !sensor.getMagneticField(&bx, &by, &bz)) {
+    if (!sensor.getTemperature(&temp) || !sensor.getMagneticField(&bx, &by, &bz))
+    {
         return false;
     }
 
@@ -111,12 +116,14 @@ bool TLVCompass::update(unsigned long now) {
     double az_ms2_meas = a.acceleration.z;
 
     // Calibration
-    if (!accelCalibrated) {
+    if (!accelCalibrated)
+    {
         accelCalSumX += ax_ms2_meas;
         accelCalSumY += ay_ms2_meas;
         accelCalSumZ += az_ms2_meas;
         accelCalCount++;
-        if (accelCalCount >= accelCalSamples) {
+        if (accelCalCount >= accelCalSamples)
+        {
             accelBiasX = accelCalSumX / accelCalCount;
             accelBiasY = accelCalSumY / accelCalCount;
             accelBiasZ = accelCalSumZ / accelCalCount;
@@ -153,15 +160,20 @@ bool TLVCompass::update(unsigned long now) {
     if (fabs(az_lin) < motionThreshold) az_lin = 0;
 
     double linNorm = sqrt(ax_lin*ax_lin + ay_lin*ay_lin + az_lin*az_lin);
-    if (linNorm == 0.0) {
-        if (!isStationary) {
+    if (linNorm == 0.0)
+    {
+        if (!isStationary)
+        {
             if (stationarySince == 0) stationarySince = now;
-            else if ((now - stationarySince) >= stationaryTime) {
+            else if ((now - stationarySince) >= stationaryTime)
+            {
                 vx = vy = vz = 0.0;
                 isStationary = true;
             }
         }
-    } else {
+    }
+    else
+    {
         stationarySince = 0;
         isStationary = false;
         vx += ax_lin * dt;
@@ -180,7 +192,8 @@ bool TLVCompass::update(unsigned long now) {
     return true;
 }
 
-void TLVCompass::smooth(double newBx, double newBy) {
+void TLVCompass::smooth(double newBx, double newBy)
+{
     bxSum -= bxFiltered;
     bySum -= byFiltered;
 
@@ -196,7 +209,8 @@ void TLVCompass::smooth(double newBx, double newBy) {
     byFiltered = bySum / filterSize;
 }
 
-void TLVCompass::smoothHeading(double newHeading) {
+void TLVCompass::smoothHeading(double newHeading)
+{
     headingSum -= headingBuffer[headingIndex];
     headingBuffer[headingIndex] = newHeading;
     headingSum += newHeading;

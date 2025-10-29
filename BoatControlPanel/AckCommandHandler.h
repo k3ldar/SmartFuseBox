@@ -17,4 +17,16 @@ public:
 
 private:
     NextionControl* _nextionControl;
+
+    // Parameter processing helpers
+    bool processHeartbeatAck(SerialCommandManager* sender, const String& key, const String& value);
+    bool processRefreshHint(const String& key, const String& value);
+    bool processRelayState(SerialCommandManager* sender, const String& key, const String& value);
+    void processUnknownParameter(SerialCommandManager* sender, const String& key, const String& value);
+
+    // Parsing utilities
+    bool parseBooleanValue(const String& value) const;
+
+    // Notification helper
+    void notifyCurrentPage(uint8_t updateType, const void* data);
 };
