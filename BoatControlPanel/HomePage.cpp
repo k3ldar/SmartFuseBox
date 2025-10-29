@@ -384,6 +384,7 @@ uint8_t HomePage::getButtonColor(uint8_t buttonIndex, bool isOn)
         {
             return configuredColor;
         }
+
         // Default ON color is blue
         return IMG_BTN_COLOR_BLUE;
     }

@@ -80,6 +80,7 @@ void BaseBoatPage::updateHeartbeat(unsigned long now)
         // Notify if connection state changed
         if (wasConnected != _isConnected)
         {
+			setWarning(!_isConnected);
             onConnectionStateChanged(_isConnected);
         }
     }
