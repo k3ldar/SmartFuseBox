@@ -34,7 +34,7 @@ private:
 
 protected:
     // Required overrides
-    uint8_t getPageId() const override { return 0; }
+    uint8_t getPageId() const override { return PAGE_HOME; }
     void begin() override;
     void refresh() override;
 

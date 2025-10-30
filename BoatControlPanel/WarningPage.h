@@ -10,7 +10,7 @@ class WarningPage : public BaseBoatPage {
 private:
 
 protected:
-    uint8_t getPageId() const override { return 0; }
+    uint8_t getPageId() const override { return PAGE_WARNING; }
     void begin() override;
     void refresh() override;
 

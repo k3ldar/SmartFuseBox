@@ -1,9 +1,6 @@
 #include "WarningPage.h"
 
-
-const char PageName[] = "pageWarning";
-const char PagePrevious[] = "pageHome";
-const char PageNext[] = "pageHome";
+// Nextion Names/Ids on Warning Page
 const uint8_t ButtonPrevious = 2;
 const uint8_t ButtonNext = 3;
 
@@ -18,7 +15,7 @@ WarningPage::WarningPage(Stream* serialPort,
 
 void WarningPage::begin()
 {
-    sendCommand(PageName); // ensure we are on page 0
+    Serial.println("Begin Warning Page");
 }
 
 void WarningPage::refresh()
@@ -37,11 +34,11 @@ void WarningPage::handleTouch(uint8_t compId, uint8_t eventType)
     switch (compId)
     {
     case ButtonPrevious:
-        sendCommand(PagePrevious);
+        setPage(PAGE_HOME);
         break;
 
     case ButtonNext:
-        sendCommand(PageNext);
+        setPage(PAGE_HOME);
         break;
     }
 }

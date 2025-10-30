@@ -5,8 +5,9 @@
 #include <SerialCommandManager.h>
 #include "Config.h"
 
-const uint8_t PageHome = 0;
-const uint8_t PageWarning = 1;
+const uint8_t PAGE_HOME = 0;
+const uint8_t PAGE_WARNING = 1;
+const uint8_t PAGE_BUTTONS = 2;
 
 const uint8_t ImageWarning = 10;
 const uint8_t ImageBlank = 11;

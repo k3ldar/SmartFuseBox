@@ -2,9 +2,6 @@
 
 
 // Nextion Names/Ids on current Home Page
-const char PageName[] = "pageHome";
-const char PageWarning[] = "pageWarning";
-const char PageNext[] = "pageWarning";
 const float CompassTemperatureWarningValue = 35;
 const char ControlHumidityControl[] = "t3";
 const char ControlTemperatureControl[] = "t2";
@@ -13,12 +10,12 @@ const char ControlBearingDirection[] = "t4";
 const char ControlSpeed[] = "t5";
 const char ControlBoatName[] = "t0";
 const char ControlWarning[] = "p2";
-const uint8_t Button1 = 3; // b1
+const uint8_t Button1 = 1; // b1
 const uint8_t Button2 = 2; // b2
-const uint8_t Button3 = 4; // b3
-const uint8_t Button4 = 5; // b4
-const uint8_t ButtonNext = 26;
-const uint8_t ButtonWarning = 27;
+const uint8_t Button3 = 3; // b3
+const uint8_t Button4 = 4; // b4
+const uint8_t ButtonNext = 13;
+const uint8_t ButtonWarning = 14;
 
 
 HomePage::HomePage(Stream* serialPort,
@@ -31,7 +28,7 @@ HomePage::HomePage(Stream* serialPort,
 
 void HomePage::begin()
 {
-    sendCommand(PageName); // ensure we are on page 0
+    setPage(PAGE_HOME); // ensure we are on page 0
     updateTemperature();
     updateHumidity();
     updateBearing();
@@ -98,11 +95,11 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
             break;
 
         case ButtonNext: 
-            sendCommand(PageNext);
+            setPage(PAGE_WARNING);
             return;
 
         case ButtonWarning:
-            sendCommand(PageWarning);
+            setPage(PAGE_WARNING);
 
         default:
             return;
