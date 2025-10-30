@@ -1,29 +1,11 @@
-#include <stdint.h>
 #pragma once
 
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
+#include <stdint.h>
 
 #include "Config.h"
 #include "BaseBoatPage.h"
-
-// Nextion Names/Ids on current Home Page
-const char PageName[] = "page 0";
-const char PageWarning[] = "page 1";
-const char PageNext[] = "page 1";
-const float CompassTemperatureWarningValue = 35;
-const char ControlHumidityControl[] = "t3";
-const char ControlTemperatureControl[] = "t2";
-const char ControlBearingText[] = "t6";
-const char ControlBearingDirection[] = "t4";
-const char ControlSpeed[] = "t5";
-const char ControlBoatName[] = "t0";
-const uint8_t Button1 = 3; // b1
-const uint8_t Button2 = 2; // b2
-const uint8_t Button3 = 4; // b3
-const uint8_t Button4 = 5; // b4
-const uint8_t ButtonNext = 26;
-const uint8_t ButtonWarning = 27;
 
 class HomePage : public BaseBoatPage {
 private:

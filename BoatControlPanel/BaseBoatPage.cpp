@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "BaseBoatPage.h"
 
+
 // Initialize static warning flag
 bool BaseBoatPage::_isWarning = false;
 

@@ -5,6 +5,12 @@
 #include <SerialCommandManager.h>
 #include "Config.h"
 
+const uint8_t PageHome = 0;
+const uint8_t PageWarning = 1;
+
+const uint8_t ImageWarning = 10;
+const uint8_t ImageBlank = 11;
+
 
 // Update type constants for HomePage external updates
 enum class PageUpdateType : uint8_t {
@@ -19,7 +25,6 @@ struct RelayStateUpdate {
     uint8_t relayIndex;  // 0-based relay index (0..7)
     bool isOn;           // true = relay on, false = relay off
 };
-
 
 /**
  * @class BaseBoatPage
@@ -74,12 +79,6 @@ protected:
     virtual ~BaseBoatPage();
     
     /**
-     * @brief Check if system is in warning state.
-     * @return true if warning is active, false otherwise
-     */
-    static bool isWarning();
-    
-    /**
      * @brief Set the system warning state.
      * @param warning true to activate warning, false to clear
      */
@@ -102,12 +101,6 @@ protected:
      * @return Pointer to the computer SerialCommandManager, or nullptr if not set
      */
     SerialCommandManager* getCommandMgrComputer() const { return _commandMgrComputer; }
-
-    /**
-     * @brief Check if link connection is active.
-     * @return true if connected (heartbeat acknowledged within timeout), false otherwise
-     */
-    bool isConnected() const { return _isConnected; }
 
     /**
      * @brief Called when connection state changes.
@@ -164,4 +157,16 @@ public:
      * command handlers can notify pages when config changes.
      */
     virtual void configUpdated();
+
+    /**
+     * @brief Check if system is in warning state.
+     * @return true if warning is active, false otherwise
+     */
+    static bool isWarning();
+
+    /**
+     * @brief Check if link connection is active.
+     * @return true if connected (heartbeat acknowledged within timeout), false otherwise
+     */
+    bool isConnected() const { return _isConnected; }
 };

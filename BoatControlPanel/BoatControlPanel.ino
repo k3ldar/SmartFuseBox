@@ -1,3 +1,4 @@
+#include "WarningPage.h"
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
@@ -6,6 +7,7 @@
 #include "TLVCompass.h"
 #include "HomePage.h"
 #include "HomeCommandHandler.h"
+#include "WarningPage.h"
 #include "Config.h"
 #include "ConfigManager.h"
 #include "ConfigCommandHandler.h"
@@ -36,7 +38,8 @@ SerialCommandManager commandMgrLink(&LINK_SERIAL, onLinkCommandReceived, '\n', '
 
 // Nextion display setup
 HomePage homePage(&NEXTION_SERIAL, &commandMgrLink, &commandMgrComputer);
-BaseDisplayPage* pages[] = { &homePage };
+WarningPage warningPage(&NEXTION_SERIAL, &commandMgrLink, &commandMgrComputer);
+BaseDisplayPage* pages[] = { &homePage, &warningPage };
 NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
 
 // link command handlers
@@ -140,7 +143,12 @@ void onComputerCommandReceived(SerialCommandManager* mgr)
 {
     String cmd = mgr->getCommand();
 
-    if (cmd == "ERR")
+    if (cmd == "DNGR")
+    {
+        COMPUTER_SERIAL.print("Danger Status: ");
+		COMPUTER_SERIAL.println(homePage.isConnected());
+    }
+    else if (cmd == "ERR")
     {
       COMPUTER_SERIAL.println(mgr->getRawMessage());
     }

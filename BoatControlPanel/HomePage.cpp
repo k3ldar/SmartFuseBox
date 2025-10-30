@@ -1,5 +1,26 @@
 #include "HomePage.h"
 
+
+// Nextion Names/Ids on current Home Page
+const char PageName[] = "pageHome";
+const char PageWarning[] = "pageWarning";
+const char PageNext[] = "pageWarning";
+const float CompassTemperatureWarningValue = 35;
+const char ControlHumidityControl[] = "t3";
+const char ControlTemperatureControl[] = "t2";
+const char ControlBearingText[] = "t6";
+const char ControlBearingDirection[] = "t4";
+const char ControlSpeed[] = "t5";
+const char ControlBoatName[] = "t0";
+const char ControlWarning[] = "p2";
+const uint8_t Button1 = 3; // b1
+const uint8_t Button2 = 2; // b2
+const uint8_t Button3 = 4; // b3
+const uint8_t Button4 = 5; // b4
+const uint8_t ButtonNext = 26;
+const uint8_t ButtonWarning = 27;
+
+
 HomePage::HomePage(Stream* serialPort,
                    SerialCommandManager* commandMgrLink,
                    SerialCommandManager* commandMgrComputer)
@@ -199,9 +220,8 @@ void HomePage::onConnectionStateChanged(bool connected)
         {
             commandMgrComputer->sendDebug("Link connection established", "HomePage");
         }
-        // Example: Update UI to show connection is active
-        // setPicture("connectionIndicator", IMG_CONNECTED);
-        // sendText("connectionStatus", "Connected");
+        sendCommand("tm0.en=0");
+        setPicture(ControlWarning, ImageBlank);
     }
     else
     {
@@ -209,10 +229,8 @@ void HomePage::onConnectionStateChanged(bool connected)
         {
             commandMgrComputer->sendDebug("Link connection lost", "HomePage");
         }
-        // Example: Update UI to show connection is lost
-        // setPicture("connectionIndicator", IMG_DISCONNECTED);
-        // sendText("connectionStatus", "Disconnected");
-        // You might also want to show a warning or disable relay controls
+        sendCommand("tm0.en=1");
+        setPicture(ControlWarning, ImageWarning);
     }
 }
 
