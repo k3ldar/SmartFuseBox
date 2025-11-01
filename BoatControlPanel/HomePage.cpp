@@ -14,8 +14,8 @@ const uint8_t Button1 = 1; // b1
 const uint8_t Button2 = 2; // b2
 const uint8_t Button3 = 3; // b3
 const uint8_t Button4 = 4; // b4
-const uint8_t ButtonNext = 13;
-const uint8_t ButtonWarning = 14;
+const uint8_t ButtonNext = 12;
+const uint8_t ButtonWarning = 13;
 
 
 HomePage::HomePage(Stream* serialPort,
@@ -28,7 +28,6 @@ HomePage::HomePage(Stream* serialPort,
 
 void HomePage::begin()
 {
-    setPage(PAGE_HOME); // ensure we are on page 0
     updateTemperature();
     updateHumidity();
     updateBearing();
@@ -72,8 +71,6 @@ void HomePage::refresh()
 // Handle touch events for buttons
 void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 {
-	Serial.print("handle touch: compId=");
-	Serial.println(compId);
     // Map component ID to button index
     int buttonIndex = -1;
     switch (compId)
@@ -100,6 +97,7 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 
         case ButtonWarning:
             setPage(PAGE_WARNING);
+            return;  
 
         default:
             return;
@@ -217,8 +215,6 @@ void HomePage::onConnectionStateChanged(bool connected)
         {
             commandMgrComputer->sendDebug("Link connection established", "HomePage");
         }
-        sendCommand("tm0.en=0");
-        setPicture(ControlWarning, ImageBlank);
     }
     else
     {
@@ -226,8 +222,6 @@ void HomePage::onConnectionStateChanged(bool connected)
         {
             commandMgrComputer->sendDebug("Link connection lost", "HomePage");
         }
-        sendCommand("tm0.en=1");
-        setPicture(ControlWarning, ImageWarning);
     }
 }
 
@@ -346,6 +340,7 @@ void HomePage::updateDirection()
 
 void HomePage::configUpdated()
 {
+    return;
     Config* config = getConfig();
     if (!config)
 		return;

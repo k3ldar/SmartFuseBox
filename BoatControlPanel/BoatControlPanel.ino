@@ -18,13 +18,11 @@
 #define LINK_SERIAL Serial2
 
 
-const unsigned long updateIntervalMs = 200;
+const unsigned long updateIntervalMs = 600;
 const unsigned long serialInitTimeoutMs = 300;
-const unsigned long serialReconnectMs = 10000;
 
 // forward declares
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection = false);
-void reconnectSerial(unsigned long now);
 void onLinkCommandReceived(SerialCommandManager* mgr);
 void onComputerCommandReceived(SerialCommandManager* mgr);
 
@@ -53,7 +51,6 @@ AckCommandHandler ackHandler(&nextion);
 
 // Timers
 unsigned long lastUpdate = 0;
-unsigned long lastSerialConnectAttempt = 0;
 
 void setup()
 {
@@ -90,7 +87,7 @@ void setup()
 void loop()
 {
     unsigned long now = millis();
-    reconnectSerial(now);
+
     commandMgrComputer.readCommands();
     commandMgrLink.readCommands();
 
@@ -108,11 +105,14 @@ void loop()
             commandMgrComputer.sendDebug("Bx: " + String(compass.getBx(), 2) + "; By: " + String(compass.getBy(), 2) + "; Bz: " + String(compass.getBz(), 2), "MAG");
             commandMgrComputer.sendDebug("Temp: " + String(compass.getTemperature(), 1) + " °C", "TEMP");
 */
-            // Update Nextion
-            homePage.setBearing(compass.getHeading());
-            homePage.setDirection(compass.getDirection());
-            homePage.setSpeed(21);
-            homePage.setCompassTemperature(compass.getTemperature());
+            // Only update HomePage if it's the currently active page
+            if (nextion.getCurrentPage() == &homePage)
+            {
+                homePage.setBearing(compass.getHeading());
+                homePage.setDirection(compass.getDirection());
+                homePage.setSpeed(21);
+                homePage.setCompassTemperature(compass.getTemperature());
+            }
         }
         else
         {
@@ -178,72 +178,3 @@ void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool w
             delay(10);
     }
 }
-
-void reconnectSerial(unsigned long now)
-{
-    if (now < lastSerialConnectAttempt + serialReconnectMs)
-      return;
-
-    lastSerialConnectAttempt = now;
-
-    if (!COMPUTER_SERIAL)
-    {
-      //InitializeSerial(COMPUTER_SERIAL, 115200, true);
-    }
-
-    if (!LINK_SERIAL)
-    {
-      //InitializeSerial(LINK_SERIAL, 9600, true);
-    }
-
-    if (!NEXTION_SERIAL)
-    {
-      //InitializeSerial(NEXTION_SERIAL, 9600, true);
-    }
-}
-
-/*
-
-#include <Arduino.h>
-#include <Wire.h>
-
-void i2cScan()
-{
-  Serial.println("I2C scan:");
-  for (uint8_t addr = 1; addr < 127; ++addr)
-  {
-    Wire.beginTransmission(addr);
-    if (Wire.endTransmission() == 0)
-    {
-      Serial.print("  Found device at 0x");
-      if (addr < 16) Serial.print("0");
-      Serial.println(addr, HEX);
-      delay(10);
-    }
-  }
-}
-
-void setup()
-{
-  Serial.begin(115200);
-  while (!Serial)
-  {
-    delay(5);
-  }
-  Wire.begin();
-  delay(50);
-
-  i2cScan();
-
-}
-
-void loop()
-{
-  // empty for diagnostic run
-  delay(1000);
-}
-
-
-
-*/
-

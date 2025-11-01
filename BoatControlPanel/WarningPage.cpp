@@ -15,7 +15,7 @@ WarningPage::WarningPage(Stream* serialPort,
 
 void WarningPage::begin()
 {
-    Serial.println("Begin Warning Page");
+
 }
 
 void WarningPage::refresh()
@@ -27,8 +27,10 @@ void WarningPage::refresh()
 // Handle touch events for buttons
 void WarningPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
-    Serial.print("warning page handle touch: compId=");
-    Serial.println(compId);
+    // Only handle release events
+    if (eventType != EventRelease) {
+        return;
+    }
 
     // Map component ID to button index
     switch (compId)
