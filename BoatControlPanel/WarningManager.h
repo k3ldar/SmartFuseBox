@@ -117,7 +117,6 @@ private:
     unsigned long _lastHeartbeatSent;       // When last heartbeat was sent
     unsigned long _lastHeartbeatReceived;   // When last ack was received
     bool _heartbeatEnabled;                 // Is heartbeat active
-    bool _isConnected;                      // Current connection state
 
     /**
      * @brief Send a heartbeat command.

@@ -44,8 +44,8 @@ bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const 
 
     if (_warningManager)
     {
-        // clear the warning if set
-        _warningManager->clearWarning(WarningType::ConnectionLost);
+        // Notify the warning manager to update heartbeat timestamp
+        _warningManager->notifyHeartbeatAck();
 	}
 
     // Notify the current page about the heartbeat acknowledgement

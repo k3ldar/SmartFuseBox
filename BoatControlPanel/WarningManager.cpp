@@ -7,8 +7,7 @@ WarningManager::WarningManager(SerialCommandManager* commandMgr, unsigned long h
       _heartbeatTimeout(heartbeatTimeout),
       _lastHeartbeatSent(0),
       _lastHeartbeatReceived(0),
-      _heartbeatEnabled(heartbeatInterval > 0),
-      _isConnected(false)
+      _heartbeatEnabled(heartbeatInterval > 0)
 {
 }
 
@@ -24,12 +23,8 @@ void WarningManager::notifyHeartbeatAck()
 {
     _lastHeartbeatReceived = millis();
     
-    // If we weren't connected, we are now
-    if (!_isConnected)
-    {
-        _isConnected = true;
-        clearWarning(WarningType::ConnectionLost);
-    }
+    // Clear the connection lost warning (connection is now established)
+    clearWarning(WarningType::ConnectionLost);
 }
 
 void WarningManager::raiseWarning(WarningType type)
@@ -103,19 +98,14 @@ void WarningManager::updateConnection(unsigned long now)
         bool connected = (_lastHeartbeatReceived > 0) && 
                         (now - _lastHeartbeatReceived) < _heartbeatTimeout;
 
-        // Update state if changed
-        if (connected != _isConnected)
+        // Update warning state based on connection status
+        if (connected)
         {
-            _isConnected = connected;
-            
-            if (connected)
-            {
-                clearWarning(WarningType::ConnectionLost);
-            }
-            else
-            {
-                raiseWarning(WarningType::ConnectionLost);
-            }
+            clearWarning(WarningType::ConnectionLost);
+        }
+        else
+        {
+            raiseWarning(WarningType::ConnectionLost);
         }
     }
 }
