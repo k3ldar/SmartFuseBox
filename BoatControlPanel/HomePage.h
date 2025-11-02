@@ -42,10 +42,10 @@ protected:
     void handleTouch(uint8_t compId, uint8_t eventType) override;
     void handleText(String text) override;
     void handleExternalUpdate(uint8_t updateType, const void* data) override;
-    void onConnectionStateChanged(bool connected) override;
 
 public:
-    explicit HomePage(Stream* serialPort, 
+    explicit HomePage(Stream* serialPort,
+                     WarningManager* warningMgr,
                      SerialCommandManager* commandMgrLink = nullptr,
                      SerialCommandManager* commandMgrComputer = nullptr);
 

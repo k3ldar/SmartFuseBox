@@ -17,9 +17,10 @@ protected:
     //optional overrides
     void handleTouch(uint8_t compId, uint8_t eventType) override;
     void handleExternalUpdate(uint8_t updateType, const void* data) override;
-    void onConnectionStateChanged(bool connected);
+    
 public:
     explicit WarningPage(Stream* serialPort,
-        SerialCommandManager* commandMgrLink = nullptr,
-        SerialCommandManager* commandMgrComputer = nullptr);
+                        WarningManager* warningMgr,
+                        SerialCommandManager* commandMgrLink = nullptr,
+                        SerialCommandManager* commandMgrComputer = nullptr);
 };

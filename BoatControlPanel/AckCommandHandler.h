@@ -10,13 +10,14 @@ class AckCommandHandler : public BaseCommandHandler
 {
 public:
     // Constructor: pass the NextionControl pointer so we can notify the current page
-    explicit AckCommandHandler(NextionControl* nextionControl);
+    explicit AckCommandHandler(NextionControl* nextionControl, WarningManager* warningManager);
 
     void handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount) override;
     const String* supportedCommands(size_t& count) const override;
 
 private:
     NextionControl* _nextionControl;
+	WarningManager* _warningManager;
 
     // Parameter processing helpers
     bool processHeartbeatAck(SerialCommandManager* sender, const String& key, const String& value);

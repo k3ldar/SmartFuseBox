@@ -1,4 +1,3 @@
-#include "WarningPage.h"
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
@@ -11,6 +10,7 @@
 #include "Config.h"
 #include "ConfigManager.h"
 #include "ConfigCommandHandler.h"
+#include "WarningManager.h"
 
 
 #define COMPUTER_SERIAL Serial
@@ -18,8 +18,10 @@
 #define LINK_SERIAL Serial2
 
 
-const unsigned long updateIntervalMs = 600;
-const unsigned long serialInitTimeoutMs = 300;
+const unsigned long UpdateIntervalMs = 600;
+const unsigned long SerialInitTimeoutMs = 300;
+const unsigned long HeartbeatIntervalMs = 1000;
+const unsigned long HeartbeatTimeoutMs = 3000;
 
 // forward declares
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection = false);
@@ -33,10 +35,12 @@ TLVCompass compass(15);
 SerialCommandManager commandMgrComputer(&COMPUTER_SERIAL, onComputerCommandReceived, '\n', ':', '=', 500, 64);
 SerialCommandManager commandMgrLink(&LINK_SERIAL, onLinkCommandReceived, '\n', ':', '=', 500, 64);
 
+// Warning manager with heartbeat monitoring
+WarningManager warningManager(&commandMgrLink, HeartbeatIntervalMs, HeartbeatTimeoutMs);
 
 // Nextion display setup
-HomePage homePage(&NEXTION_SERIAL, &commandMgrLink, &commandMgrComputer);
-WarningPage warningPage(&NEXTION_SERIAL, &commandMgrLink, &commandMgrComputer);
+HomePage homePage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+WarningPage warningPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
 BaseDisplayPage* pages[] = { &homePage, &warningPage };
 NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
 
@@ -47,7 +51,7 @@ HomeCommandHandler homeCommandHandler(&homePage, &commandMgrLink, &commandMgrCom
 ConfigCommandHandler configHandler(&homePage);
 
 // shared command handlers
-AckCommandHandler ackHandler(&nextion);
+AckCommandHandler ackHandler(&nextion, &warningManager);
 
 // Timers
 unsigned long lastUpdate = 0;
@@ -92,8 +96,9 @@ void loop()
     commandMgrLink.readCommands();
 
     nextion.update(now);
+	warningManager.update(now);
 
-    if (now - lastUpdate >= updateIntervalMs)
+    if (now - lastUpdate >= UpdateIntervalMs)
     {
         lastUpdate = now;
 
@@ -146,7 +151,7 @@ void onComputerCommandReceived(SerialCommandManager* mgr)
     if (cmd == "DNGR")
     {
         COMPUTER_SERIAL.print("Danger Status: ");
-		COMPUTER_SERIAL.println(homePage.isConnected());
+		COMPUTER_SERIAL.println(warningManager.isWarningActive(WarningType::ConnectionLost));
     }
     else if (cmd == "ERR")
     {
@@ -172,7 +177,7 @@ void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool w
 
     if (waitForConnection)
     {
-        unsigned long leave = millis() + serialInitTimeoutMs;
+        unsigned long leave = millis() + SerialInitTimeoutMs;
 
         while (!serialPort && millis() < leave)
             delay(10);

@@ -1,7 +1,7 @@
 #include "AckCommandHandler.h"
 
-AckCommandHandler::AckCommandHandler(NextionControl* nextionControl)
-    : _nextionControl(nextionControl)
+AckCommandHandler::AckCommandHandler(NextionControl* nextionControl, WarningManager* warningManager)
+	: _nextionControl(nextionControl), _warningManager(warningManager)
 {
 }
 
@@ -41,6 +41,12 @@ bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const 
     // Check for heartbeat acknowledgement (F0=ok)
     if (key != "F0" || !value.equalsIgnoreCase("ok"))
         return false;
+
+    if (_warningManager)
+    {
+        // clear the warning if set
+        _warningManager->clearWarning(WarningType::ConnectionLost);
+	}
 
     // Notify the current page about the heartbeat acknowledgement
     notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::HeartbeatAck), nullptr);

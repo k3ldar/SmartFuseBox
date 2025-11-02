@@ -4,6 +4,7 @@
 #include <BaseDisplayPage.h>
 #include <SerialCommandManager.h>
 #include "Config.h"
+#include "WarningManager.h"
 
 const uint8_t PAGE_HOME = 0;
 const uint8_t PAGE_WARNING = 1;
@@ -12,8 +13,7 @@ const uint8_t PAGE_BUTTONS = 2;
 const uint8_t ImageWarning = 10;
 const uint8_t ImageBlank = 11;
 
-
-// Update type constants for HomePage external updates
+// Update type constants for external updates
 enum class PageUpdateType : uint8_t {
     None = 0x00,
 	Warning = 0x01,
@@ -33,7 +33,7 @@ struct RelayStateUpdate {
  * 
  * Provides common functionality and shared state for all pages in the boat
  * control panel application, including warning state management, configuration
- * access, heartbeat/connection monitoring, and other shared behaviors.
+ * access, and other shared behaviors.
  */
 class BaseBoatPage : public BaseDisplayPage {
 private:
@@ -44,33 +44,20 @@ private:
     SerialCommandManager* _commandMgrLink;
     SerialCommandManager* _commandMgrComputer;
 
-    // Heartbeat and connection monitoring
-    unsigned long _lastHeartbeatSent;
-    unsigned long _lastHeartbeatReceived;
-    bool _isConnected;
-    bool _heartbeatEnabled;
-
-    /**
-     * @brief Internal method to send heartbeat command.
-     * Called automatically from updateHeartbeat().
-     */
-    void sendHeartbeat();
+    // Warning manager (shared across all pages)
+    WarningManager* _warningManager;
 
 protected:
-    // Static warning flag shared across all pages
-    static bool _isWarning;
-
-    // Heartbeat configuration constants (can be overridden by derived classes if needed)
-    static const unsigned long HEARTBEAT_INTERVAL = 1000;  // Send heartbeat every 1 second
-    static const unsigned long HEARTBEAT_TIMEOUT = 3000;   // Connection lost after 3 seconds without response
     
     /**
      * @brief Constructor for boat pages.
      * @param serialPort Pointer to the Nextion serial stream
+     * @param warningMgr Pointer to the shared WarningManager
      * @param commandMgrLink Pointer to the SerialCommandManager for link communication (optional)
      * @param commandMgrComputer Pointer to the SerialCommandManager for computer communication (optional)
      */
     explicit BaseBoatPage(Stream* serialPort, 
+                         WarningManager* warningMgr,
                          SerialCommandManager* commandMgrLink = nullptr,
                          SerialCommandManager* commandMgrComputer = nullptr);
     
@@ -78,12 +65,6 @@ protected:
      * @brief Virtual destructor for proper cleanup
      */
     virtual ~BaseBoatPage();
-    
-    /**
-     * @brief Set the system warning state.
-     * @param warning true to activate warning, false to clear
-     */
-    static void setWarning(bool warning);
     
     /**
      * @brief Get the configuration pointer.
@@ -104,36 +85,10 @@ protected:
     SerialCommandManager* getCommandMgrComputer() const { return _commandMgrComputer; }
 
     /**
-     * @brief Called when connection state changes.
-     * 
-     * Override in derived classes to respond to connection state changes.
-     * Default implementation does nothing.
-     * 
-     * @param connected true if connection established, false if connection lost
+     * @brief Get the warning manager.
+     * @return Pointer to the WarningManager
      */
-    virtual void onConnectionStateChanged(bool connected);
-
-    /**
-     * @brief Update heartbeat mechanism.
-     * 
-     * Call this from your derived class's refresh() method to maintain heartbeat.
-     * Handles sending heartbeat commands at intervals and detecting timeouts.
-     * 
-     * @param now Current time in milliseconds (from millis())
-     */
-    void updateHeartbeat(unsigned long now);
-
-    /**
-     * @brief Handle external updates including heartbeat acknowledgements.
-     * 
-     * Override in derived classes to handle page-specific updates.
-     * Base implementation handles HeartbeatAck update type.
-     * Call base implementation first when overriding.
-     * 
-     * @param updateType Type of update (see PageUpdateType enum)
-     * @param data Optional data pointer (type depends on updateType)
-     */
-    void handleExternalUpdate(uint8_t updateType, const void* data) override;
+    WarningManager* getWarningManager() const { return _warningManager; }
 
 public:
     
@@ -144,13 +99,6 @@ public:
     void configSet(Config* config);
 
     /**
-     * @brief Enable or disable heartbeat functionality.
-     * 
-     * @param enabled true to enable heartbeat, false to disable
-     */
-    void setHeartbeatEnabled(bool enabled);
-
-    /**
      * @brief Called when configuration has been updated.
      * 
      * Override in derived classes to respond to configuration changes.
@@ -158,16 +106,4 @@ public:
      * command handlers can notify pages when config changes.
      */
     virtual void configUpdated();
-
-    /**
-     * @brief Check if system is in warning state.
-     * @return true if warning is active, false otherwise
-     */
-    static bool isWarning();
-
-    /**
-     * @brief Check if link connection is active.
-     * @return true if connected (heartbeat acknowledged within timeout), false otherwise
-     */
-    bool isConnected() const { return _isConnected; }
 };

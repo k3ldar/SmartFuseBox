@@ -6,9 +6,10 @@ const uint8_t ButtonNext = 3;
 
 
 WarningPage::WarningPage(Stream* serialPort,
+    WarningManager* warningMgr,
     SerialCommandManager* commandMgrLink,
     SerialCommandManager* commandMgrComputer)
-    : BaseBoatPage(serialPort, commandMgrLink, commandMgrComputer)
+    : BaseBoatPage(serialPort, warningMgr, commandMgrLink, commandMgrComputer)
 {
 
 }
@@ -20,8 +21,8 @@ void WarningPage::begin()
 
 void WarningPage::refresh()
 {
-    // Update heartbeat mechanism
-    updateHeartbeat(millis());
+    // Update current warnings
+    
 }
 
 // Handle touch events for buttons
@@ -49,9 +50,4 @@ void WarningPage::handleExternalUpdate(uint8_t updateType, const void* data)
 {
     // Call base class first to handle heartbeat ACKs
     BaseBoatPage::handleExternalUpdate(updateType, data);
-}
-
-void WarningPage::onConnectionStateChanged(bool connected)
-{
-
 }

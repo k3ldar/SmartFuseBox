@@ -3,8 +3,8 @@
 
 // Nextion Names/Ids on current Home Page
 const float CompassTemperatureWarningValue = 35;
-const char ControlHumidityControl[] = "t3";
-const char ControlTemperatureControl[] = "t2";
+const char ControlHumidity[] = "t3";
+const char ControlTemperature[] = "t2";
 const char ControlBearingText[] = "t6";
 const char ControlBearingDirection[] = "t4";
 const char ControlSpeed[] = "t5";
@@ -19,9 +19,10 @@ const uint8_t ButtonWarning = 13;
 
 
 HomePage::HomePage(Stream* serialPort,
+                   WarningManager* warningMgr,
                    SerialCommandManager* commandMgrLink,
                    SerialCommandManager* commandMgrComputer)
-    : BaseBoatPage(serialPort, commandMgrLink, commandMgrComputer)
+    : BaseBoatPage(serialPort, warningMgr, commandMgrLink, commandMgrComputer)
 {
     
 }
@@ -33,13 +34,31 @@ void HomePage::begin()
     updateBearing();
     updateSpeed();
 
-    setPicture("p2", IMG_BLANK);
-	setPicture("b1", IMG_BTN_COLOR_GREY); 
-	setPicture("b2", IMG_BTN_COLOR_GREY); 
-	setPicture("b3", IMG_BTN_COLOR_GREY); 
+    setPicture("b1", IMG_BTN_COLOR_GREY); 
+    setPicture("b2", IMG_BTN_COLOR_GREY); 
+    setPicture("b3", IMG_BTN_COLOR_GREY); 
     setPicture("b4", IMG_BTN_COLOR_GREY); 
     _dangerControlShown = false;
-	_compassTempAboveNorm = 0;
+    _compassTempAboveNorm = 0;
+
+	WarningManager* warningMgr = getWarningManager();
+
+    // Set initial warning state display
+    if (warningMgr->hasWarnings())
+    {
+        setPicture(ControlWarning, IMG_WARNING);
+    }
+    else
+    {
+        setPicture(ControlWarning, IMG_BLANK);
+    }
+
+    // If not connected, show disconnected state
+    if (warningMgr->isWarningActive(WarningType::ConnectionLost))
+    {
+        sendText(ControlHumidity, "--");
+        sendText(ControlTemperature, "--");
+    }
 
     // If config already supplied before begin, apply it
     if (getConfig())
@@ -64,8 +83,29 @@ void HomePage::refresh()
         }
     }
 
-    // Update heartbeat mechanism
-    updateHeartbeat(millis());
+    // Update warnings and heartbeat
+    unsigned long now = millis();
+    
+    // Update warning display
+    WarningManager* warningMgr = getWarningManager();
+    if (warningMgr)
+    {
+        if (warningMgr->hasWarnings())
+        {
+            setPicture(ControlWarning, IMG_WARNING);
+        }
+        else
+        {
+            setPicture(ControlWarning, IMG_BLANK);
+        }
+        
+        // Update connection-related displays
+        if (warningMgr->isWarningActive(WarningType::ConnectionLost))
+        {
+            sendText(ControlHumidity, "--");
+            sendText(ControlTemperature, "--");
+        }
+    }
 }
 
 // Handle touch events for buttons
@@ -204,27 +244,6 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
     }
 }
 
-void HomePage::onConnectionStateChanged(bool connected)
-{
-    // Handle connection state changes
-    SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
-    
-    if (connected)
-    {
-        if (commandMgrComputer)
-        {
-            commandMgrComputer->sendDebug("Link connection established", "HomePage");
-        }
-    }
-    else
-    {
-        if (commandMgrComputer)
-        {
-            commandMgrComputer->sendDebug("Link connection lost", "HomePage");
-        }
-    }
-}
-
 // --- Public setters ---
 void HomePage::setTemperature(float tempC)
 {
@@ -291,29 +310,29 @@ void HomePage::setCompassTemperature(float tempC)
 // --- Private update methods ---
 void HomePage::updateTemperature()
 {
-    if (_lastTemp == NAN)
+    if (isnan(_lastTemp))
     {
-        sendText(ControlTemperatureControl, "--");
+        sendText(ControlTemperature, "--");
         return;
 	}
 
-    sendText(ControlTemperatureControl, String(_lastTemp, 1) + String((char)176) + "C"); // one decimal place
+    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + "C"); // one decimal place
 }
 
 void HomePage::updateHumidity()
 {
-    if (_lastHumidity == NAN)
+    if (isnan(_lastHumidity))
     {
-        sendText(ControlHumidityControl, "--");
+        sendText(ControlHumidity, "--");
         return;
     }
 
-    sendText(ControlHumidityControl, String(_lastHumidity, 1) + "%");
+    sendText(ControlHumidity, String(_lastHumidity, 1) + "%");
 }
 
 void HomePage::updateBearing()
 {
-    if (_lastBearing == NAN)
+    if (isnan(_lastBearing))
     {
         sendText(ControlBearingText, "--");
         return;
@@ -324,7 +343,7 @@ void HomePage::updateBearing()
 
 void HomePage::updateSpeed()
 {
-    if (_lastSpeed == NAN)
+    if (isnan(_lastSpeed))
     {
         sendText(ControlSpeed, "--");
         return;
