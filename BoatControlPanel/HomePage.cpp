@@ -41,23 +41,26 @@ void HomePage::begin()
     _dangerControlShown = false;
     _compassTempAboveNorm = 0;
 
-	WarningManager* warningMgr = getWarningManager();
+    WarningManager* warningMgr = getWarningManager();
 
     // Set initial warning state display
-    if (warningMgr->hasWarnings())
+    if (warningMgr)
     {
-        setPicture(ControlWarning, IMG_WARNING);
-    }
-    else
-    {
-        setPicture(ControlWarning, IMG_BLANK);
-    }
+        if (warningMgr->hasWarnings())
+        {
+            setPicture(ControlWarning, IMG_WARNING);
+        }
+        else
+        {
+            setPicture(ControlWarning, IMG_BLANK);
+        }
 
-    // If not connected, show disconnected state
-    if (warningMgr->isWarningActive(WarningType::ConnectionLost))
-    {
-        sendText(ControlHumidity, "--");
-        sendText(ControlTemperature, "--");
+        // If not connected, show disconnected state
+        if (warningMgr->isWarningActive(WarningType::ConnectionLost))
+        {
+            sendText(ControlHumidity, "--");
+            sendText(ControlTemperature, "--");
+        }
     }
 
     // If config already supplied before begin, apply it
