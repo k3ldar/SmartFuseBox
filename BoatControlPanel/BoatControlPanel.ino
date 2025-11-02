@@ -67,7 +67,7 @@ void setup()
     commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 
     InitializeSerial(COMPUTER_SERIAL, 115200, true);
-    InitializeSerial(NEXTION_SERIAL, 9600);
+    InitializeSerial(NEXTION_SERIAL, 19200);
     InitializeSerial(LINK_SERIAL, 9600, false);
 
     commandMgrComputer.sendCommand("INIT", "Initializing Boat Control Panel");

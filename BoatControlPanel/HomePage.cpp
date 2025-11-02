@@ -85,9 +85,6 @@ void HomePage::refresh()
             commandMgrLink->sendCommand("DNGR", "Blink:" + String(_dangerControlShown));
         }
     }
-
-    // Update warnings and heartbeat
-    unsigned long now = millis();
     
     // Update warning display
     WarningManager* warningMgr = getWarningManager();
@@ -188,7 +185,7 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
         setPicture2("b" + String(buttonIndex + 1), newColor);
 
         // Send relay command
-        String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? ":ON" : ":OFF");
+        String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? "=1" : "=0");
         SerialCommandManager* commandMgrLink = getCommandMgrLink();
         if (commandMgrLink)
         {
@@ -362,7 +359,6 @@ void HomePage::updateDirection()
 
 void HomePage::configUpdated()
 {
-    return;
     Config* config = getConfig();
     if (!config)
 		return;
