@@ -1,28 +1,70 @@
 #include "HomePage.h"
 
-HomePage::HomePage(Stream* serialPort, SerialCommandManager* commandMgrLink, SerialCommandManager* commandMgrComputer)
-    : BaseDisplayPage(serialPort), _commandMgrLink(commandMgrLink), _commandMgrComputer(commandMgrComputer)
+
+// Nextion Names/Ids on current Home Page
+const float CompassTemperatureWarningValue = 35;
+const char ControlHumidity[] = "t3";
+const char ControlTemperature[] = "t2";
+const char ControlBearingText[] = "t6";
+const char ControlBearingDirection[] = "t4";
+const char ControlSpeed[] = "t5";
+const char ControlBoatName[] = "t0";
+const char ControlWarning[] = "p2";
+const uint8_t Button1 = 1; // b1
+const uint8_t Button2 = 2; // b2
+const uint8_t Button3 = 3; // b3
+const uint8_t Button4 = 4; // b4
+const uint8_t ButtonNext = 12;
+const uint8_t ButtonWarning = 13;
+
+
+HomePage::HomePage(Stream* serialPort,
+                   WarningManager* warningMgr,
+                   SerialCommandManager* commandMgrLink,
+                   SerialCommandManager* commandMgrComputer)
+    : BaseBoatPage(serialPort, warningMgr, commandMgrLink, commandMgrComputer)
 {
     
 }
 
 void HomePage::begin()
 {
-    sendCommand(PageName); // ensure we are on page 0
     updateTemperature();
     updateHumidity();
     updateBearing();
     updateSpeed();
 
-	setPicture("b1", BTN_COLOR_GREY); 
-	setPicture("b2", BTN_COLOR_GREY); 
-	setPicture("b3", BTN_COLOR_GREY); 
-    setPicture("b4", BTN_COLOR_GREY); 
+    setPicture("b1", IMG_BTN_COLOR_GREY); 
+    setPicture("b2", IMG_BTN_COLOR_GREY); 
+    setPicture("b3", IMG_BTN_COLOR_GREY); 
+    setPicture("b4", IMG_BTN_COLOR_GREY); 
     _dangerControlShown = false;
-	_compassTempAboveNorm = 0;
+    _compassTempAboveNorm = 0;
+
+    WarningManager* warningMgr = getWarningManager();
+
+    // Set initial warning state display
+    if (warningMgr)
+    {
+        if (warningMgr->hasWarnings())
+        {
+            setPicture(ControlWarning, IMG_WARNING);
+        }
+        else
+        {
+            setPicture(ControlWarning, IMG_BLANK);
+        }
+
+        // If not connected, show disconnected state
+        if (warningMgr->isWarningActive(WarningType::ConnectionLost))
+        {
+            sendText(ControlHumidity, "--");
+            sendText(ControlTemperature, "--");
+        }
+    }
 
     // If config already supplied before begin, apply it
-    if (_config)
+    if (getConfig())
         configUpdated();
 }
 
@@ -37,7 +79,35 @@ void HomePage::refresh()
     {
         _dangerControlShown = !_dangerControlShown;
 
-        _commandMgrLink->sendCommand("DNGR", "Blink:" + String(_dangerControlShown));
+        SerialCommandManager* commandMgrLink = getCommandMgrLink();
+        if (commandMgrLink)
+        {
+            commandMgrLink->sendCommand("DNGR", "Blink:" + String(_dangerControlShown));
+        }
+    }
+
+    // Update warnings and heartbeat
+    unsigned long now = millis();
+    
+    // Update warning display
+    WarningManager* warningMgr = getWarningManager();
+    if (warningMgr)
+    {
+        if (warningMgr->hasWarnings())
+        {
+            setPicture(ControlWarning, IMG_WARNING);
+        }
+        else
+        {
+            setPicture(ControlWarning, IMG_BLANK);
+        }
+        
+        // Update connection-related displays
+        if (warningMgr->isWarningActive(WarningType::ConnectionLost))
+        {
+            sendText(ControlHumidity, "--");
+            sendText(ControlTemperature, "--");
+        }
     }
 }
 
@@ -48,15 +118,37 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
     int buttonIndex = -1;
     switch (compId)
     {
-        case 3: buttonIndex = 0; break; // b1
-        case 2: buttonIndex = 1; break; // b2
-        case 4: buttonIndex = 2; break; // b3
-        case 5: buttonIndex = 3; break; // b4
-        default: return;
+        case Button1:
+            buttonIndex = 0;
+            break;
+
+        case Button2:
+            buttonIndex = 1;
+            break;
+
+        case Button3:
+            buttonIndex = 2;
+            break;
+
+        case Button4:
+            buttonIndex = 3;
+            break;
+
+        case ButtonNext: 
+            setPage(PAGE_WARNING);
+            return;
+
+        case ButtonWarning:
+            setPage(PAGE_WARNING);
+            return;  
+
+        default:
+            return;
     }
 
+    Config* config = getConfig();
     // Check if we have a valid config and the button is mapped to a relay
-    if (!_config || buttonIndex < 0 || buttonIndex >= HOME_BUTTONS)
+    if (!config || buttonIndex < 0 || buttonIndex >= HOME_BUTTONS)
         return;
 
     uint8_t relayIndex = _slotToRelay[buttonIndex];
@@ -66,15 +158,23 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
         return;
 
     // Get the relay name from config
-    String relayName = String(_config->relayNames[relayIndex]);
+    String relayName = String(config->relayNames[relayIndex]);
+
+    SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
 
     if (eventType == EventPress)
     {
-        _commandMgrComputer->sendDebug(relayName + " pressed", "HomePage");
+        if (commandMgrComputer)
+        {
+            commandMgrComputer->sendDebug(relayName + " pressed", "HomePage");
+        }
     }
     else if (eventType == EventRelease)
     {
-        _commandMgrComputer->sendDebug(relayName + " released", "HomePage");
+        if (commandMgrComputer)
+        {
+            commandMgrComputer->sendDebug(relayName + " released", "HomePage");
+        }
 
         // Toggle button state
         _buttonOn[buttonIndex] = !_buttonOn[buttonIndex];
@@ -89,7 +189,11 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 
         // Send relay command
         String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? ":ON" : ":OFF");
-        _commandMgrLink->sendCommand("R3", cmd);
+        SerialCommandManager* commandMgrLink = getCommandMgrLink();
+        if (commandMgrLink)
+        {
+            commandMgrLink->sendCommand("R3", cmd);
+        }
     }
 }
 
@@ -101,7 +205,10 @@ void HomePage::handleText(String text)
 
 void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
 {
-    if (updateType == static_cast<uint8_t>(HomePageUpdateType::RelayState) && data != nullptr)
+    // Call base class first to handle heartbeat ACKs
+    BaseBoatPage::handleExternalUpdate(updateType, data);
+
+    if (updateType == static_cast<uint8_t>(PageUpdateType::RelayState) && data != nullptr)
     {
         const RelayStateUpdate* update = static_cast<const RelayStateUpdate*>(data);
 
@@ -123,10 +230,12 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
                 setPicture2(buttonName, newColor);
 
                 // Log the update for debugging
-                if (_commandMgrComputer)
+                SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
+                if (commandMgrComputer)
                 {
-                    String relayName = _config ? String(_config->relayNames[update->relayIndex]) : String(update->relayIndex);
-                    _commandMgrComputer->sendDebug(
+                    Config* config = getConfig();
+                    String relayName = config ? String(config->relayNames[update->relayIndex]) : String(update->relayIndex);
+                    commandMgrComputer->sendDebug(
                         relayName + " state updated to " + (update->isOn ? "ON" : "OFF"),
                         "HomePage"
                     );
@@ -204,21 +313,45 @@ void HomePage::setCompassTemperature(float tempC)
 // --- Private update methods ---
 void HomePage::updateTemperature()
 {
-    sendText(ControlTemperatureControl, String(_lastTemp, 1) + String((char)176) + "C"); // one decimal place
+    if (isnan(_lastTemp))
+    {
+        sendText(ControlTemperature, "--");
+        return;
+	}
+
+    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + "C"); // one decimal place
 }
 
 void HomePage::updateHumidity()
 {
-    sendText(ControlHumidityControl, String(_lastHumidity, 1) + "%");
+    if (isnan(_lastHumidity))
+    {
+        sendText(ControlHumidity, "--");
+        return;
+    }
+
+    sendText(ControlHumidity, String(_lastHumidity, 1) + "%");
 }
 
 void HomePage::updateBearing()
 {
+    if (isnan(_lastBearing))
+    {
+        sendText(ControlBearingText, "--");
+        return;
+    }
+
     sendText(ControlBearingText, String(_lastBearing, 0) + String((char)176) + "C");
 }
 
 void HomePage::updateSpeed()
 {
+    if (isnan(_lastSpeed))
+    {
+        sendText(ControlSpeed, "--");
+        return;
+    }
+
     sendText(ControlSpeed, String(_lastSpeed, 0) + "kn");
 }
 
@@ -227,15 +360,11 @@ void HomePage::updateDirection()
     sendText(ControlBearingDirection, _lastDirection);
 }
 
-void HomePage::configSet(Config* config)
-{
-    _config = config;
-    configUpdated();
-}
-
 void HomePage::configUpdated()
 {
-    if (!_config)
+    return;
+    Config* config = getConfig();
+    if (!config)
 		return;
 
     // update Nextion with config details
@@ -243,7 +372,7 @@ void HomePage::configUpdated()
     // Example: apply home page mapping and enabled mask to UI slots
     for (uint8_t button = 0; button < HOME_BUTTONS; ++button)
     {
-        uint8_t relayIndex = _config->homePageMapping[button];
+        uint8_t relayIndex = config->homePageMapping[button];
         if (relayIndex <= 7)
         {
             _slotToRelay[button] = relayIndex;
@@ -252,45 +381,48 @@ void HomePage::configUpdated()
             setPicture("b" + String(button + 1), _buttonImage[button]);
 
             // Adjust control names to match your Nextion layout:
-            sendText(String("b") + String(button + 1), String(_config->relayNames[relayIndex]));
+            sendText(String("b") + String(button + 1), String(config->relayNames[relayIndex]));
         }
         else
         {
             _slotToRelay[button] = 0xFF;
             _buttonOn[button] = false;
-            _buttonImage[button] = BTN_COLOR_GREY;
+            _buttonImage[button] = IMG_BTN_COLOR_GREY;
             setPicture("b" + String(button + 1), _buttonImage[button]);
             sendText(String("btn") + String(button + 1), ""); // clear label
         }
     }
 
     // Update the boat name
-    sendText(ControlBoatName, String(_config->boatName)); 
+    sendText(ControlBoatName, String(config->boatName)); 
 }
 
 uint8_t HomePage::getButtonColor(uint8_t buttonIndex, bool isOn)
 {
-    if (!_config || buttonIndex >= HOME_BUTTONS)
+    Config* config = getConfig();
+    if (!config || buttonIndex >= HOME_BUTTONS)
     {
         // Default: grey off, blue on
-        return isOn ? BTN_COLOR_BLUE : BTN_COLOR_GREY;
+        return isOn ? IMG_BTN_COLOR_BLUE : IMG_BTN_COLOR_GREY;
     }
 
     if (isOn)
     {
         // Check if a custom color is configured for this button
-        uint8_t configuredColor = _config->homePageButtonImage[buttonIndex];
-        if (configuredColor != BTN_COLOR_DEFAULT &&
-            configuredColor >= BTN_COLOR_BLUE &&
-            configuredColor <= BTN_COLOR_YELLOW) {
+        uint8_t configuredColor = config->homePageButtonImage[buttonIndex];
+        if (configuredColor != IMG_BTN_COLOR_DEFAULT &&
+            configuredColor >= IMG_BTN_COLOR_BLUE &&
+            configuredColor <= IMG_BTN_COLOR_YELLOW)
+        {
             return configuredColor;
         }
+
         // Default ON color is blue
-        return BTN_COLOR_BLUE;
+        return IMG_BTN_COLOR_BLUE;
     }
     else
     {
         // OFF state always uses grey
-        return BTN_COLOR_GREY;
+        return IMG_BTN_COLOR_GREY;
     }
 }

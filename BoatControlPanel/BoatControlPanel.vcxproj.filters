@@ -52,7 +52,13 @@
     <ClCompile Include="AckCommandHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BaseCommandHandler.cpp">
+    <ClCompile Include="BaseBoatPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WarningPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WarningManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -72,12 +78,20 @@
     <ClInclude Include="AckCommandHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BaseCommandHandler.h">
+    <ClInclude Include="BoatControlPanel\BaseBoatPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WarningPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WarningManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Commands.md" />
     <None Include="docs\ExternalUpdatePattern.md" />
+    <None Include="HEARTBEAT_IMPLEMENTATION.md" />
+    <None Include="WARNING_SYSTEM_GUIDE.md" />
   </ItemGroup>
 </Project>

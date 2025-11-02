@@ -5,13 +5,19 @@
 
 
 // Button color constants (Nextion picture IDs)
-const uint8_t BTN_COLOR_BLUE = 2;
-const uint8_t BTN_COLOR_GREEN = 3;
-const uint8_t BTN_COLOR_GREY = 4;
-const uint8_t BTN_COLOR_ORANGE = 5;
-const uint8_t BTN_COLOR_RED = 6;
-const uint8_t BTN_COLOR_YELLOW = 7;
-const uint8_t BTN_COLOR_DEFAULT = 0xFF; // Use default color
+const uint8_t IMG_BTN_COLOR_DEFAULT = 0xFF; // Use default color
+const uint8_t IMG_BTN_COLOR_BLUE = 2;
+const uint8_t IMG_BTN_COLOR_GREEN = 3;
+const uint8_t IMG_BTN_COLOR_GREY = 4;
+const uint8_t IMG_BTN_COLOR_ORANGE = 5;
+const uint8_t IMG_BTN_COLOR_RED = 6;
+const uint8_t IMG_BTN_COLOR_YELLOW = 7;
+
+const uint8_t IMG_COMPASS = 8;
+const uint8_t IMG_SETTINGS = 9;
+const uint8_t IMG_WARNING = 10;
+const uint8_t IMG_BLANK = 11;
+const uint8_t IMG_BACK_BUTTON = 12;
 
 
 //

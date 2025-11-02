@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
@@ -7,9 +6,11 @@
 #include "TLVCompass.h"
 #include "HomePage.h"
 #include "HomeCommandHandler.h"
+#include "WarningPage.h"
 #include "Config.h"
 #include "ConfigManager.h"
 #include "ConfigCommandHandler.h"
+#include "WarningManager.h"
 
 
 #define COMPUTER_SERIAL Serial
@@ -17,13 +18,13 @@
 #define LINK_SERIAL Serial2
 
 
-const unsigned long updateIntervalMs = 200;
-const unsigned long serialInitTimeoutMs = 300;
-const unsigned long serialReconnectMs = 10000;
+const unsigned long UpdateIntervalMs = 600;
+const unsigned long SerialInitTimeoutMs = 300;
+const unsigned long HeartbeatIntervalMs = 1000;
+const unsigned long HeartbeatTimeoutMs = 3000;
 
 // forward declares
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection = false);
-void reconnectSerial(unsigned long now);
 void onLinkCommandReceived(SerialCommandManager* mgr);
 void onComputerCommandReceived(SerialCommandManager* mgr);
 
@@ -34,10 +35,13 @@ TLVCompass compass(15);
 SerialCommandManager commandMgrComputer(&COMPUTER_SERIAL, onComputerCommandReceived, '\n', ':', '=', 500, 64);
 SerialCommandManager commandMgrLink(&LINK_SERIAL, onLinkCommandReceived, '\n', ':', '=', 500, 64);
 
+// Warning manager with heartbeat monitoring
+WarningManager warningManager(&commandMgrLink, HeartbeatIntervalMs, HeartbeatTimeoutMs);
 
 // Nextion display setup
-HomePage homePage(&NEXTION_SERIAL, &commandMgrLink, &commandMgrComputer);
-BaseDisplayPage* pages[] = { &homePage };
+HomePage homePage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+WarningPage warningPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+BaseDisplayPage* pages[] = { &homePage, &warningPage };
 NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
 
 // link command handlers
@@ -47,11 +51,10 @@ HomeCommandHandler homeCommandHandler(&homePage, &commandMgrLink, &commandMgrCom
 ConfigCommandHandler configHandler(&homePage);
 
 // shared command handlers
-AckCommandHandler ackHandler(&nextion);
+AckCommandHandler ackHandler(&nextion, &warningManager);
 
 // Timers
 unsigned long lastUpdate = 0;
-unsigned long lastSerialConnectAttempt = 0;
 
 void setup()
 {
@@ -74,7 +77,8 @@ void setup()
     bool gotConfig = ConfigManager::load();
     homePage.configSet(ConfigManager::getPtr());
 
-    if (!compass.begin()) {
+    if (!compass.begin())
+    {
       commandMgrComputer.sendError("INIT", "Compass Failed");
       while (1) delay(100);
     }
@@ -87,13 +91,14 @@ void setup()
 void loop()
 {
     unsigned long now = millis();
-    reconnectSerial(now);
+
     commandMgrComputer.readCommands();
     commandMgrLink.readCommands();
 
     nextion.update(now);
+	warningManager.update(now);
 
-    if (now - lastUpdate >= updateIntervalMs)
+    if (now - lastUpdate >= UpdateIntervalMs)
     {
         lastUpdate = now;
 
@@ -105,11 +110,14 @@ void loop()
             commandMgrComputer.sendDebug("Bx: " + String(compass.getBx(), 2) + "; By: " + String(compass.getBy(), 2) + "; Bz: " + String(compass.getBz(), 2), "MAG");
             commandMgrComputer.sendDebug("Temp: " + String(compass.getTemperature(), 1) + " °C", "TEMP");
 */
-            // Update Nextion
-            homePage.setBearing(compass.getHeading());
-            homePage.setDirection(compass.getDirection());
-            homePage.setSpeed(21);
-            homePage.setCompassTemperature(compass.getTemperature());
+            // Only update HomePage if it's the currently active page
+            if (nextion.getCurrentPage() == &homePage)
+            {
+                homePage.setBearing(compass.getHeading());
+                homePage.setDirection(compass.getDirection());
+                homePage.setSpeed(21);
+                homePage.setCompassTemperature(compass.getTemperature());
+            }
         }
         else
         {
@@ -140,7 +148,12 @@ void onComputerCommandReceived(SerialCommandManager* mgr)
 {
     String cmd = mgr->getCommand();
 
-    if (cmd == "ERR")
+    if (cmd == "DNGR")
+    {
+        COMPUTER_SERIAL.print("Danger Status: ");
+		COMPUTER_SERIAL.println(warningManager.isWarningActive(WarningType::ConnectionLost));
+    }
+    else if (cmd == "ERR")
     {
       COMPUTER_SERIAL.println(mgr->getRawMessage());
     }
@@ -164,70 +177,9 @@ void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool w
 
     if (waitForConnection)
     {
-        unsigned long leave = millis() + serialInitTimeoutMs;
+        unsigned long leave = millis() + SerialInitTimeoutMs;
 
         while (!serialPort && millis() < leave)
             delay(10);
     }
 }
-
-void reconnectSerial(unsigned long now)
-{
-    if (now < lastSerialConnectAttempt + serialReconnectMs)
-      return;
-
-    lastSerialConnectAttempt = now;
-
-    if (!COMPUTER_SERIAL)
-    {
-      //InitializeSerial(COMPUTER_SERIAL, 115200, true);
-    }
-
-    if (!LINK_SERIAL)
-    {
-      //InitializeSerial(LINK_SERIAL, 9600, true);
-    }
-
-    if (!NEXTION_SERIAL)
-    {
-      //InitializeSerial(NEXTION_SERIAL, 9600, true);
-    }
-}
-
-/*
-
-#include <Arduino.h>
-#include <Wire.h>
-
-void i2cScan() {
-  Serial.println("I2C scan:");
-  for (uint8_t addr = 1; addr < 127; ++addr) {
-    Wire.beginTransmission(addr);
-    if (Wire.endTransmission() == 0) {
-      Serial.print("  Found device at 0x");
-      if (addr < 16) Serial.print("0");
-      Serial.println(addr, HEX);
-      delay(10);
-    }
-  }
-}
-
-void setup() {
-  Serial.begin(115200);
-  while (!Serial) { delay(5); }
-  Wire.begin();
-  delay(50);
-
-  i2cScan();
-
-}
-
-void loop() {
-  // empty for diagnostic run
-  delay(1000);
-}
-
-
-
-*/
-

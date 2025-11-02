@@ -31,13 +31,15 @@ bool ConfigManager::load()
     EEPROM.get(0, _cfg);
 
     // Quick checks
-    if (_cfg.version != VERSION) {
+    if (_cfg.version != VERSION)
+    {
         resetToDefaults();
         return false;
     }
 
     uint16_t expected = calcChecksum(_cfg);
-    if (expected != _cfg.checksum) {
+    if (expected != _cfg.checksum)
+    {
         // corrupted: reset to defaults
         resetToDefaults();
         return false;
@@ -74,7 +76,8 @@ void ConfigManager::resetToDefaults()
     strncpy(_cfg.boatName, "My Boat", BOAT_NAME_MAX_LEN);
 
     // Default relay names
-    for (uint8_t i = 0; i < RELAY_COUNT; ++i) {
+    for (uint8_t i = 0; i < RELAY_COUNT; ++i)
+    {
         // default "R0", "R1", etc. limited to RELAY_NAME_MAX chars
         char buf[RELAY_NAME_MAX_LEN + 1]{ 0 };
         snprintf(buf, sizeof(buf), "R%u", (unsigned)i);
@@ -82,9 +85,10 @@ void ConfigManager::resetToDefaults()
     }
 
     // Default home page mapping: first four relays visible in order
-    for (uint8_t i = 0; i < HOME_BUTTONS; ++i) {
+    for (uint8_t i = 0; i < HOME_BUTTONS; ++i)
+    {
         _cfg.homePageMapping[i] = i; // map slot i -> relay i
-		_cfg.homePageButtonImage[i] = BTN_COLOR_GREY; // default color
+		_cfg.homePageButtonImage[i] = IMG_BTN_COLOR_GREY; // default color
     }
 
     // compute checksum

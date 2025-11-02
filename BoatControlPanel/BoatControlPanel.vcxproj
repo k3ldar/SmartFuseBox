@@ -74,7 +74,7 @@
     <ProjectCapability Include="VisualMicroLinux" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BaseCommandHandler.cpp" />
+    <ClCompile Include="BaseBoatPage.cpp" />
     <ClCompile Include="BoatControlPanel.ino">
       <FileType>CppCode</FileType>
       <DeploymentContent>true</DeploymentContent>
@@ -88,6 +88,8 @@
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
     <ClCompile Include="ConfigManager.cpp" />
+    <ClCompile Include="WarningManager.cpp" />
+    <ClCompile Include="WarningPage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fonts.h">
@@ -106,11 +108,13 @@
       <FileType>CppCode</FileType>
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
-    <ClInclude Include="BaseCommandHandler.h" />
+    <ClInclude Include="BoatControlPanel\BaseBoatPage.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="ConfigCommandHandler.h" />
     <ClInclude Include="ConfigManager.h" />
     <ClInclude Include="AckCommandHandler.h" />
+    <ClInclude Include="WarningManager.h" />
+    <ClInclude Include="WarningPage.h" />
     <ClInclude Include="__vm\.BoatControlPanel.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +123,8 @@
       </SubType>
     </None>
     <None Include="docs\ExternalUpdatePattern.md" />
+    <None Include="HEARTBEAT_IMPLEMENTATION.md" />
+    <None Include="WARNING_SYSTEM_GUIDE.md" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
