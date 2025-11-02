@@ -1,13 +1,13 @@
 #include "WarningManager.h"
 
-WarningManager::WarningManager(SerialCommandManager* commandMgr, unsigned long hearbeatInterval, unsigned long hearbeatTimeout)
+WarningManager::WarningManager(SerialCommandManager* commandMgr, unsigned long heartbeatInterval, unsigned long heartbeatTimeout)
     : _commandMgr(commandMgr),
       _activeWarnings(0),
-      _heartbeatInterval(hearbeatInterval),
-      _heartbeatTimeout(hearbeatTimeout),
+      _heartbeatInterval(heartbeatInterval),
+      _heartbeatTimeout(heartbeatTimeout),
       _lastHeartbeatSent(0),
       _lastHeartbeatReceived(0),
-      _heartbeatEnabled(hearbeatInterval > 0),
+      _heartbeatEnabled(heartbeatInterval > 0),
       _isConnected(false)
 {
 }

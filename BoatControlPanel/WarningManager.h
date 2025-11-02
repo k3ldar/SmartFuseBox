@@ -59,8 +59,10 @@ public:
     /**
      * @brief Constructor.
      * @param commandMgr Pointer to SerialCommandManager for heartbeat commands (optional)
+     * @param heartbeatInterval How often to send heartbeat in milliseconds
+     * @param heartbeatTimeout Timeout before connection considered lost in milliseconds
      */
-    explicit WarningManager(SerialCommandManager* commandMgr, unsigned long hearbeatInterval, unsigned long hearbeatTimeout);
+    explicit WarningManager(SerialCommandManager* commandMgr, unsigned long heartbeatInterval, unsigned long heartbeatTimeout);
 
     /**
      * @brief Update heartbeat and check for timeouts.
