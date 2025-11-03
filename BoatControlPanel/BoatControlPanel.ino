@@ -51,7 +51,7 @@ HomeCommandHandler homeCommandHandler(&homePage, &commandMgrLink, &commandMgrCom
 ConfigCommandHandler configHandler(&homePage);
 
 // shared command handlers
-AckCommandHandler ackHandler(&nextion, &warningManager);
+AckCommandHandler ackHandler(&commandMgrComputer, &nextion, &warningManager);
 
 // Timers
 unsigned long lastUpdate = 0;

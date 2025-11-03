@@ -1,7 +1,7 @@
 #include "AckCommandHandler.h"
 
-AckCommandHandler::AckCommandHandler(NextionControl* nextionControl, WarningManager* warningManager)
-	: _nextionControl(nextionControl), _warningManager(warningManager)
+AckCommandHandler::AckCommandHandler(SerialCommandManager* computerCommandManager, NextionControl* nextionControl, WarningManager* warningManager)
+	: _computerCommandManager(computerCommandManager), _nextionControl(nextionControl), _warningManager(warningManager)
 {
 }
 
@@ -24,16 +24,25 @@ bool AckCommandHandler::parseBooleanValue(const String& value) const
             value.equalsIgnoreCase("ok"));
 }
 
+void AckCommandHandler::sendDebugMessage(String message)
+{
+    if (_computerCommandManager)
+    {
+        _computerCommandManager->sendDebug(message, "AckCommandHandler");
+	}
+}
+
 void AckCommandHandler::notifyCurrentPage(uint8_t updateType, const void* data)
 {
     if (!_nextionControl)
         return;
 
-    BaseDisplayPage* currentPage = _nextionControl->getCurrentPage();
-    if (currentPage)
-    {
-        currentPage->handleExternalUpdate(updateType, data);
-    }
+    BaseDisplayPage* p = _nextionControl->getCurrentPage();
+    
+    if (!p)
+        return;
+
+    p->handleExternalUpdate(updateType, data);
 }
 
 bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const String& key, const String& value)
@@ -59,90 +68,57 @@ bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const 
     return true;
 }
 
-bool AckCommandHandler::processRefreshHint(const String& key, const String& value)
+bool AckCommandHandler::processRelayAck(SerialCommandManager* sender, const String& key, const String& value)
 {
-    // If we get an Rn=ok (echo for the command) treat it as a hint to refresh UI
-    return (key.startsWith("R") && value.equalsIgnoreCase("ok"));
-}
 
-bool AckCommandHandler::processRelayState(SerialCommandManager* sender, const String& key, const String& value)
-{
-    // Numeric keys indicate relay index (0-based). Value '1' means on, '0' means off.
-    if (!isAllDigits(key))
-        return false;
-
-    int relayIndex = key.toInt(); // 0-based index
-    bool isOn = parseBooleanValue(value);
-
-    // Log the parsed state back to the sender for debugging (if available)
-    if (sender)
-    {
-        sender->sendDebug(String("Parsed ACK relay ") + String(relayIndex + 1) + (isOn ? "=ON" : "=OFF"), "ACK");
-    }
-
-    // Notify the current page about the relay state change
-    RelayStateUpdate update = { static_cast<uint8_t>(relayIndex), isOn };
-    notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
-
-    return true;
-}
-
-void AckCommandHandler::processUnknownParameter(SerialCommandManager* sender, const String& key, const String& value)
-{
-    if (sender)
-    {
-        sender->sendDebug(String("Unexpected ACK param: ") + key + "=" + value, "ACK");
-    }
 }
 
 void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
-    // Normalize command
     String cmd = command;
     cmd.trim();
 
     // Validate command
     if (cmd != AckCommand)
     {
-        sendAckErr(sender, cmd, "Unknown ACK command");
+        sendDebugMessage("Unknown ACK command " + cmd);
         return;
     }
 
-    bool sawRefreshHint = false;
+	// the first param indicates what is being acknowledged (F0=ok for heartbeat ack, R2=ok for relay command ack, etc.)
 
-    // Parse params looking for relay state updates like "3=1" (relay index 3 -> on)
-    for (int i = 0; i < paramCount; ++i)
+    if (paramCount == 0)
     {
-        String key = params[i].key;
-        String val = params[i].value;
-        key.trim();
-        val.trim();
+        sendDebugMessage("No parameters in ACK command");
+        return;
+	}
 
-        // Skip empty keys
-        if (key.length() == 0)
-            continue;
+    String key = params[0].key;
+    key.trim();
+	String val = params[0].value;
+	val.trim();
 
-        // Process parameter types in priority order
-        if (processHeartbeatAck(sender, key, val))
-            continue;
-
-        if (processRefreshHint(key, val))
+    if (key == "F0" && val.equalsIgnoreCase("ok"))
+    {
+        // Heartbeat acknowledgement
+        processHeartbeatAck(sender, key, val);
+	}
+    else if (key == "R2" && val.equalsIgnoreCase("ok") && paramCount == 2)
+    {
+        if (!isAllDigits(params[1].key) || !isAllDigits(params[1].value))
         {
-            sawRefreshHint = true;
-            continue;
+            sendDebugMessage("invalid parameters in relay ACK");
+            return;
         }
 
-        if (processRelayState(sender, key, val))
-            continue;
-
-        // Unknown parameter type
-        processUnknownParameter(sender, key, val);
+		uint8_t relayIndex = params[1].key.toInt();
+		bool isOn = parseBooleanValue(params[1].value);
+        RelayStateUpdate update = { relayIndex, isOn };
+        notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
     }
-
-    // Optional: still refresh if we saw the hint (for other potential UI updates)
-    if (sawRefreshHint && _nextionControl)
+	else
     {
-        _nextionControl->refreshCurrentPage();
+		sendDebugMessage("Unknown or invalid ACK command");
     }
 }
 
