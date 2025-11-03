@@ -14,7 +14,7 @@
 enum class WarningType : uint8_t {
     None = 0x00,                    // No warning
     ConnectionLost = 0x01,          // Link heartbeat lost
-    HighTemperature = 0x02,         // Temperature threshold exceeded
+    HighCompassTemperature = 0x02,         // Compass temperature threshold exceeded
     LowBattery = 0x03,              // Battery voltage low
     SensorFailure = 0x04,           // Sensor communication failure
     

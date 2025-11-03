@@ -9,6 +9,7 @@
 
 class HomePage : public BaseBoatPage {
 private:
+	unsigned long _lastRefreshTime = 0;
     float _lastTemp = NAN;
     float _lastHumidity = NAN;
     float _lastBearing = NAN;
@@ -16,7 +17,6 @@ private:
     String _lastDirection = "";
     float _lastCompassTemp = NAN;
     byte _compassTempAboveNorm = 0;
-    bool _dangerControlShown; 
 	bool _buttonOn[HOME_BUTTONS] = { false, false, false, false };
 	byte _buttonImage[HOME_BUTTONS] = { IMG_BTN_COLOR_GREY, IMG_BTN_COLOR_GREY, IMG_BTN_COLOR_GREY, IMG_BTN_COLOR_GREY };
 	const byte _buttonImageOn[HOME_BUTTONS] = { IMG_BTN_COLOR_BLUE, IMG_BTN_COLOR_BLUE, IMG_BTN_COLOR_BLUE, IMG_BTN_COLOR_BLUE };
@@ -36,9 +36,10 @@ protected:
     // Required overrides
     uint8_t getPageId() const override { return PAGE_HOME; }
     void begin() override;
-    void refresh() override;
+    void refresh(unsigned long now) override;
 
     //optional overrides
+	void onEnterPage() override;
     void handleTouch(uint8_t compId, uint8_t eventType) override;
     void handleText(String text) override;
     void handleExternalUpdate(uint8_t updateType, const void* data) override;

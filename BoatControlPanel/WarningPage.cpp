@@ -19,7 +19,7 @@ void WarningPage::begin()
 
 }
 
-void WarningPage::refresh()
+void WarningPage::refresh(unsigned long now)
 {
     // Update current warnings
     

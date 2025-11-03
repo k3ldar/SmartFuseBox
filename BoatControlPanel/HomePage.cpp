@@ -17,6 +17,8 @@ const uint8_t Button4 = 4; // b4
 const uint8_t ButtonNext = 12;
 const uint8_t ButtonWarning = 13;
 
+const unsigned long RefreshIntervalMs = 10000;
+
 
 HomePage::HomePage(Stream* serialPort,
                    WarningManager* warningMgr,
@@ -29,62 +31,38 @@ HomePage::HomePage(Stream* serialPort,
 
 void HomePage::begin()
 {
-    updateTemperature();
-    updateHumidity();
-    updateBearing();
-    updateSpeed();
+    // If config already supplied before begin, apply it
+    if (getConfig())
+        configUpdated();
 
     setPicture("b1", IMG_BTN_COLOR_GREY); 
     setPicture("b2", IMG_BTN_COLOR_GREY); 
     setPicture("b3", IMG_BTN_COLOR_GREY); 
     setPicture("b4", IMG_BTN_COLOR_GREY); 
-    _dangerControlShown = false;
     _compassTempAboveNorm = 0;
-
-    WarningManager* warningMgr = getWarningManager();
-
-    // Set initial warning state display
-    if (warningMgr)
-    {
-        if (warningMgr->hasWarnings())
-        {
-            setPicture(ControlWarning, IMG_WARNING);
-        }
-        else
-        {
-            setPicture(ControlWarning, IMG_BLANK);
-        }
-
-        // If not connected, show disconnected state
-        if (warningMgr->isWarningActive(WarningType::ConnectionLost))
-        {
-            sendText(ControlHumidity, "--");
-            sendText(ControlTemperature, "--");
-        }
-    }
-
-    // If config already supplied before begin, apply it
-    if (getConfig())
-        configUpdated();
 }
 
-void HomePage::refresh()
+void HomePage::onEnterPage()
 {
+    // Request relay states to update button states
+    getCommandMgrLink()->sendCommand("R2", "");
+    _lastRefreshTime = millis();
+}
+
+void HomePage::refresh(unsigned long now)
+{
+    // Send R2 command every 10 seconds to refresh relay states
+    if (now - _lastRefreshTime >= RefreshIntervalMs)
+    {
+        getCommandMgrComputer()->sendDebug("Sending R2", "HomePage");
+        _lastRefreshTime = now;
+        getCommandMgrLink()->sendCommand("R2", "");
+    }
+
     updateTemperature();
     updateHumidity();
     updateBearing();
     updateSpeed();
-
-    if (_compassTempAboveNorm > 5)
-    {
-        _dangerControlShown = !_dangerControlShown;
-
-        SerialCommandManager* commandMgrLink = getCommandMgrLink();
-        if (commandMgrLink)
-        {
-            commandMgrLink->sendCommand("DNGR", "Blink:" + String(_dangerControlShown));
-        }
-    }
     
     // Update warning display
     WarningManager* warningMgr = getWarningManager();
@@ -299,10 +277,15 @@ void HomePage::setCompassTemperature(float tempC)
         if (tempC > CompassTemperatureWarningValue && _compassTempAboveNorm < 10)
         {
             _compassTempAboveNorm++;
+
+            if (_compassTempAboveNorm > 5)
+                getWarningManager()->raiseWarning(WarningType::HighCompassTemperature);
         }
         else
         {
             _compassTempAboveNorm = 0;
+            
+            getWarningManager()->clearWarning(WarningType::HighCompassTemperature);
         }
     }
 }
@@ -338,7 +321,7 @@ void HomePage::updateBearing()
         return;
     }
 
-    sendText(ControlBearingText, String(_lastBearing, 0) + String((char)176) + "C");
+    sendText(ControlBearingText, String(_lastBearing, 0) + String((char)176));
 }
 
 void HomePage::updateSpeed()

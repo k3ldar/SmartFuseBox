@@ -12,7 +12,7 @@ private:
 protected:
     uint8_t getPageId() const override { return PAGE_WARNING; }
     void begin() override;
-    void refresh() override;
+    void refresh(unsigned long now) override;
 
     //optional overrides
     void handleTouch(uint8_t compId, uint8_t eventType) override;
