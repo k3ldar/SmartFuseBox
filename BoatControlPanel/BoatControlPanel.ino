@@ -1,3 +1,4 @@
+#include "SensorCommandHandler.h"
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
@@ -73,18 +74,21 @@ void setup()
     commandMgrComputer.sendCommand("INIT", "Initializing Boat Control Panel");
 
     // retrieve config settings
+
     ConfigManager::begin();
-    bool gotConfig = ConfigManager::load();
-    homePage.configSet(ConfigManager::getPtr());
+
+    if (ConfigManager::load())
+        homePage.configSet(ConfigManager::getPtr());
 
     if (!compass.begin())
     {
       commandMgrComputer.sendError("INIT", "Compass Failed");
-      while (1) delay(100);
+
+      while (1)
+          delay(100);
     }
 
     nextion.begin();
-
     commandMgrComputer.sendCommand("INIT", "Initialized");
 }
 

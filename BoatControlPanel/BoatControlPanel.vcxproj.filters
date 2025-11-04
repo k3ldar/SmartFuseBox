@@ -13,46 +13,37 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="src">
+    <Filter Include="Source Files\CommandHandlers">
+      <UniqueIdentifier>{0e22f77a-2b6a-44d9-a163-1a8847829d9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CommandHandlers">
+      <UniqueIdentifier>{95e87703-2579-449a-ab41-8762dab87592}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pages">
+      <UniqueIdentifier>{b29810fd-1caf-4700-9c95-276f1f80db4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pages">
+      <UniqueIdentifier>{c37ba95f-4995-4249-a1b5-c8256fc32327}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pages\src">
       <UniqueIdentifier>{1566da2f-921a-45dd-a2bf-1618cd0abf7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\_micro-api">
+    <Filter Include="Source Files\Pages\src\_micro-api">
       <UniqueIdentifier>{485a5ce4-39df-480a-aa43-cf8cf79c3f3c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\_micro-api\libraries">
+    <Filter Include="Source Files\Pages\src\_micro-api\libraries">
       <UniqueIdentifier>{ef3a8f70-2663-4a4c-9b15-ebcdcc0a944a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Sensors">
+      <UniqueIdentifier>{3fad0e87-3d7a-49f0-8e0d-e5b5767d37e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sensors">
+      <UniqueIdentifier>{acc3133c-1004-4c60-9b5f-c21f378d0ccc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="fonts.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HomeCommandHandler.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HomePage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HomePage.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TLVCompass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TLVCompass.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="BoatControlPanel.ino" />
     <ClCompile Include="ConfigManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConfigCommandHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AckCommandHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseBoatPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WarningPage.cpp">
@@ -60,6 +51,36 @@
     </ClCompile>
     <ClCompile Include="WarningManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AckCommandHandler.cpp">
+      <Filter>Source Files\CommandHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigCommandHandler.cpp">
+      <Filter>Source Files\CommandHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="SensorCommandHandler.cpp">
+      <Filter>Source Files\CommandHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="HomeCommandHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseBoatPage.cpp">
+      <Filter>Source Files\Pages</Filter>
+    </ClCompile>
+    <ClCompile Include="HomePage.cpp">
+      <Filter>Source Files\Pages</Filter>
+    </ClCompile>
+    <ClCompile Include="HomePage.h">
+      <Filter>Header Files\Pages</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseBoatCommandHandler.cpp">
+      <Filter>Source Files\CommandHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="TLVCompass.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="TLVCompass.h">
+      <Filter>Header Files\Sensors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -72,20 +93,26 @@
     <ClInclude Include="Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ConfigCommandHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AckCommandHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BoatControlPanel\BaseBoatPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WarningPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WarningManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigCommandHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="AckCommandHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="SensorCommandHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="BoatControlPanel\BaseBoatPage.h">
+      <Filter>Header Files\Pages</Filter>
+    </ClInclude>
+    <ClInclude Include="WarningPage.h">
+      <Filter>Header Files\Pages</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseBoatCommandHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

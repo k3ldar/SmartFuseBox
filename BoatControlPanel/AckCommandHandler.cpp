@@ -1,48 +1,8 @@
 #include "AckCommandHandler.h"
 
 AckCommandHandler::AckCommandHandler(SerialCommandManager* computerCommandManager, NextionControl* nextionControl, WarningManager* warningManager)
-	: _computerCommandManager(computerCommandManager), _nextionControl(nextionControl), _warningManager(warningManager)
+    : BaseBoatCommandHandler(computerCommandManager, nextionControl, warningManager)
 {
-}
-
-static bool isAllDigits(const String& s)
-{
-    if (s.length() == 0) return false;
-    for (size_t i = 0; i < s.length(); ++i)
-    {
-        if (!isDigit(s[i]))
-            return false;
-    }
-    return true;
-}
-
-bool AckCommandHandler::parseBooleanValue(const String& value) const
-{
-    return (value == "1" || 
-            value.equalsIgnoreCase("on") || 
-            value.equalsIgnoreCase("true") || 
-            value.equalsIgnoreCase("ok"));
-}
-
-void AckCommandHandler::sendDebugMessage(String message)
-{
-    if (_computerCommandManager)
-    {
-        _computerCommandManager->sendDebug(message, "AckCommandHandler");
-	}
-}
-
-void AckCommandHandler::notifyCurrentPage(uint8_t updateType, const void* data)
-{
-    if (!_nextionControl)
-        return;
-
-    BaseDisplayPage* p = _nextionControl->getCurrentPage();
-    
-    if (!p)
-        return;
-
-    p->handleExternalUpdate(updateType, data);
 }
 
 bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const String& key, const String& value)
@@ -81,7 +41,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     // Validate command
     if (cmd != AckCommand)
     {
-        sendDebugMessage("Unknown ACK command " + cmd);
+        sendDebugMessage("Unknown ACK command " + cmd, "AckCommandHandler");
         return;
     }
 
@@ -89,7 +49,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
 
     if (paramCount == 0)
     {
-        sendDebugMessage("No parameters in ACK command");
+        sendDebugMessage("No parameters in ACK command", "AckCommandHandler");
         return;
 	}
 
@@ -107,7 +67,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     {
         if (!isAllDigits(params[1].key) || !isAllDigits(params[1].value))
         {
-            sendDebugMessage("invalid parameters in relay ACK");
+            sendDebugMessage("invalid parameters in relay ACK", "AckCommandHandler");
             return;
         }
 
@@ -118,7 +78,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     }
 	else
     {
-		sendDebugMessage("Unknown or invalid ACK command");
+		sendDebugMessage("Unknown or invalid ACK command", "AckCommandHandler");
     }
 }
 

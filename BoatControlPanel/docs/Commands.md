@@ -50,7 +50,12 @@ These commands are used to send sensor data from the Boat Control Panel to a com
 
 | Command | Example | Purpose |
 |---|---|---|
-| `S0` — Temperature | `S0:Temp=72.5` | Send temperature sensor data. Param format: `<sensor>=<value>`. |
-| `S1` — Humidity | `S1:Humidity=55.2` | Send humidity sensor data. Param format: `<sensor>=<value>`. |
-| `S2` — Voltage | `S2:Voltage=12.6` | Send voltage sensor data. Param format: `<sensor>=<value>`. |
-| `S3` — Current | `S3:Current=3.4` | Send current sensor data. Param format: `<sensor>=<value>`. |
+| `S0` — Temperature | `S0:v=72.5` | Send temperature sensor data. Param format: `<sensor>=<value>`. |
+| `S1` — Humidity | `S1:v=55.2` | Send humidity sensor data. Param format: `<sensor>=<value>`. |
+| `S2` — Bearing | `S2:v=128` | Send voltage sensor data. Param format: `<sensor>=<value>`. |
+| `S3` — Direction | `S3:v=NNW` | Send current sensor data. Param format: `<sensor>=<value>`. |
+| `S4` — Speed | `S4:v=3.4` | Send current sensor data. Param format: `<sensor>=<value>`. |
+| `S5` — Compass Temp | `S5:v=23.4` | Send current sensor data. Param format: `<sensor>=<value>`. |
+| `S6` — Water Level | `S6:v=3.4` | Send current sensor data. Param format: `<sensor>=<value>`. |
+| `S7` — Water Pump Active  | `S7:v=1` | Send current sensor data. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
+| `S8` — Horn Active  | `S8:v=1` | Send current sensor data. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
