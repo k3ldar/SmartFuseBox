@@ -327,6 +327,4 @@ ASALocalRun/
 *.nvuser
 
 
-**/__vm/
-/BoatControlPanel/__vm/Compile.vmps.xml
-/BoatControlPanel/__vm/Upload.vmps.xml
+/BoatControlPanel/__vm/
