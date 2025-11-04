@@ -26,13 +26,13 @@ These are commands used to configure the system settings and can only be sent fr
 Common error responses you may see: `Missing param`, `Missing params`, `Missing name`, `Empty name`, `Index out of range`, `Slot out of range`, `Relay out of range (or 255 to clear)`, `EEPROM commit failed`, `Unknown config command`.
 
 
-## Acknowldement Commands
+## Acknowledgement Commands
 These commands are used in response to receiving a command.
 
 | Command | Example | Purpose |
 |---|---|---|
-| `ACK` — Acknowledement | `ACK:C4=Index out of range` | Indicates that the C4 command was processed and the index specified was out of range. |
-| `ACK` — Acknowledement | `ACK:C4=ok` | Indicates that the C4 command was processed successfully. |
+| `ACK` — Acknowledgement | `ACK:C4=Index out of range` | Indicates that the C4 command was processed and the index specified was out of range. |
+| `ACK` — Acknowledgement | `ACK:C4=ok` | Indicates that the C4 command was processed successfully. |
 
 ## Relay Control Commands
 These commands are used to control the relays on the Boat Control Panel. Commands can be sent from a computer or generated internally by the Boat Control Panel.
