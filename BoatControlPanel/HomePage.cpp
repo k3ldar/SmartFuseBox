@@ -220,6 +220,36 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
             }
         }
     }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Temperature) && data != nullptr)
+    {
+        const FloatStateUpdate* update = static_cast<const FloatStateUpdate*>(data);
+        setTemperature(update->value);
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Humidity) && data != nullptr)
+    {
+        const IntStateUpdate* update = static_cast<const IntStateUpdate*>(data);
+        setHumidity(static_cast<float>(update->value));
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Bearing) && data != nullptr)
+    {
+        const FloatStateUpdate* update = static_cast<const FloatStateUpdate*>(data);
+        setBearing(update->value);
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Direction) && data != nullptr)
+    {
+        const CharStateUpdate* update = static_cast<const CharStateUpdate*>(data);
+        setDirection(String(update->value));
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Speed) && data != nullptr)
+    {
+        const IntStateUpdate* update = static_cast<const IntStateUpdate*>(data);
+        setSpeed(static_cast<float>(update->value));
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::CompassTemp) && data != nullptr)
+    {
+        const FloatStateUpdate* update = static_cast<const FloatStateUpdate*>(data);
+        setCompassTemperature(update->value);
+    }
 }
 
 // --- Public setters ---

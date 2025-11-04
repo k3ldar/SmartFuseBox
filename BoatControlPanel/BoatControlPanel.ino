@@ -47,6 +47,7 @@ NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]))
 
 // link command handlers
 HomeCommandHandler homeCommandHandler(&homePage, &commandMgrLink, &commandMgrComputer);
+SensorCommandHandler sensorCommandHandler(&commandMgrComputer, &nextion, &warningManager);
 
 // computer command handlers
 ConfigCommandHandler configHandler(&homePage);
@@ -59,7 +60,7 @@ unsigned long lastUpdate = 0;
 
 void setup()
 {
-    ISerialCommandHandler* linkHandlers[] = { &homeCommandHandler, &ackHandler };
+    ISerialCommandHandler* linkHandlers[] = { &homeCommandHandler, &ackHandler, &sensorCommandHandler };
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
@@ -108,12 +109,6 @@ void loop()
 
         if (compass.update(now))
         {
-            /*commandMgrComputer.sendDebug(String(compass.getHeading(), 1) + "° (" + compass.getDirection() + ")", "HEADING");
-            commandMgrComputer.sendDebug("Ax: " + String(compass.getAx(), 2) + "; Ay: " + String(compass.getAy(), 2) + "; Az: " + String(compass.getAz(), 2), "ACCEL");
-            commandMgrComputer.sendDebug("Vx: " + String(compass.getVx(), 2) + "; Vy: " + String(compass.getVy(), 2) + "; Vz: " + String(compass.getVz(), 2), "VELOCITY");
-            commandMgrComputer.sendDebug("Bx: " + String(compass.getBx(), 2) + "; By: " + String(compass.getBy(), 2) + "; Bz: " + String(compass.getBz(), 2), "MAG");
-            commandMgrComputer.sendDebug("Temp: " + String(compass.getTemperature(), 1) + " °C", "TEMP");
-*/
             // Only update HomePage if it's the currently active page
             if (nextion.getCurrentPage() == &homePage)
             {
@@ -133,46 +128,13 @@ void loop()
 void onLinkCommandReceived(SerialCommandManager* mgr)
 {
     String cmd = mgr->getCommand();
-
-    if (cmd == "ERR")
-    {
-      COMPUTER_SERIAL.println(mgr->getRawMessage());
-    }
-    else if (cmd == "WTR")
-    {
-      commandMgrComputer.sendCommand(mgr->getRawMessage(), "");
-    }
-    else
-    {
-        commandMgrComputer.sendError("Unknown command: " + cmd, "LINKHANDLER");
-    }
+    commandMgrComputer.sendError("Unknown command: " + cmd, "LINKHANDLER");
 }
 
 void onComputerCommandReceived(SerialCommandManager* mgr)
 {
     String cmd = mgr->getCommand();
-
-    if (cmd == "DNGR")
-    {
-        COMPUTER_SERIAL.print("Danger Status: ");
-		COMPUTER_SERIAL.println(warningManager.isWarningActive(WarningType::ConnectionLost));
-    }
-    else if (cmd == "ERR")
-    {
-      COMPUTER_SERIAL.println(mgr->getRawMessage());
-    }
-    else if (cmd == "WTR")
-    {
-      commandMgrComputer.sendCommand(mgr->getRawMessage(), "");
-    }
-    else if (cmd == "RELAY")
-    {
-        commandMgrLink.sendCommand("RELAY", mgr->getRawMessage());
-    }
-    else
-    {
-        commandMgrComputer.sendError("Unknown command: " + cmd, "PCHANDLER");
-    }
+    commandMgrComputer.sendError("Unknown command: " + cmd, "PCHANDLER");
 }
 
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection)

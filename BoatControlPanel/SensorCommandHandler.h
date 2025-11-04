@@ -12,7 +12,7 @@ const char SensorDirection[] = "S3";
 const char SensorSpeed[] = "S4";
 const char SensorCompassTemp[] = "S5";
 const char SensorWaterLevel[] = "S6";
-const char SensorWaterPump[] = "S7";
+const char SensorWaterPumpActive[] = "S7";
 const char SensorHornActive[] = "S8";
 
 class SensorCommandHandler : public BaseBoatCommandHandler

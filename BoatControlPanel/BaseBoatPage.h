@@ -16,15 +16,44 @@ const uint8_t ImageBlank = 11;
 // Update type constants for external updates
 enum class PageUpdateType : uint8_t {
     None = 0x00,
-	Warning = 0x01,
+    Warning = 0x01,
     RelayState = 0x02,
-    HeartbeatAck = 0x03,  // Heartbeat acknowledgement received (F0=ok)
+    HeartbeatAck = 0x03,
+    Temperature = 0x04,
+    Humidity = 0x05,
+    Bearing = 0x06,
+    Direction = 0x07,
+    Speed = 0x08,
+    CompassTemp = 0x09,
+    WaterLevel = 0x10,
+    WaterPumpActive = 0x0A,
+    SensorHornActive = 0x0B,
 };
 
 // Data structure for relay state updates
 struct RelayStateUpdate {
     uint8_t relayIndex;  // 0-based relay index (0..7)
     bool isOn;           // true = relay on, false = relay off
+};
+
+struct FloatStateUpdate {
+    float value;
+};
+
+struct IntStateUpdate {
+    int value;
+};
+
+struct BoolStateUpdate {
+    bool value;
+};
+
+// Data structure for string/text updates (e.g., direction like "NNW", "SE")
+// Fixed size to avoid flexible array member issues in C++
+struct CharStateUpdate {
+    static const uint8_t MAX_LENGTH = 16; // Sufficient for compass directions, status strings, etc.
+    uint8_t length;           // Actual length of the string (not including null terminator)
+    char value[MAX_LENGTH];   // Fixed-size buffer for the string (null-terminated)
 };
 
 /**
