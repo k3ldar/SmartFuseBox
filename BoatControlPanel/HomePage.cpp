@@ -54,7 +54,7 @@ void HomePage::refresh(unsigned long now)
     // Send R2 command every 10 seconds to refresh relay states
     if (now - _lastRefreshTime >= RefreshIntervalMs)
     {
-        getCommandMgrComputer()->sendDebug("Sending R2", "HomePage");
+        getCommandMgrComputer()->sendDebug(F("Sending R2"), F("HomePage"));
         _lastRefreshTime = now;
         getCommandMgrLink()->sendCommand("R2", "");
     }
@@ -141,14 +141,14 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
     {
         if (commandMgrComputer)
         {
-            commandMgrComputer->sendDebug(relayName + " pressed", "HomePage");
+            commandMgrComputer->sendDebug(relayName + String(F(" pressed")), F("HomePage"));
         }
     }
     else if (eventType == EventRelease)
     {
         if (commandMgrComputer)
         {
-            commandMgrComputer->sendDebug(relayName + " released", "HomePage");
+            commandMgrComputer->sendDebug(relayName + String(F(" released")), F("HomePage"));
         }
 
         // Toggle button state
@@ -219,6 +219,36 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
                 break; // Found the button, no need to continue
             }
         }
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Temperature) && data != nullptr)
+    {
+        const FloatStateUpdate* update = static_cast<const FloatStateUpdate*>(data);
+        setTemperature(update->value);
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Humidity) && data != nullptr)
+    {
+        const IntStateUpdate* update = static_cast<const IntStateUpdate*>(data);
+        setHumidity(static_cast<float>(update->value));
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Bearing) && data != nullptr)
+    {
+        const FloatStateUpdate* update = static_cast<const FloatStateUpdate*>(data);
+        setBearing(update->value);
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Direction) && data != nullptr)
+    {
+        const CharStateUpdate* update = static_cast<const CharStateUpdate*>(data);
+        setDirection(String(update->value));
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::Speed) && data != nullptr)
+    {
+        const IntStateUpdate* update = static_cast<const IntStateUpdate*>(data);
+        setSpeed(static_cast<float>(update->value));
+    }
+    else if (updateType == static_cast<uint8_t>(PageUpdateType::CompassTemp) && data != nullptr)
+    {
+        const FloatStateUpdate* update = static_cast<const FloatStateUpdate*>(data);
+        setCompassTemperature(update->value);
     }
 }
 
@@ -295,9 +325,9 @@ void HomePage::updateTemperature()
 {
     if (isnan(_lastTemp))
     {
-        sendText(ControlTemperature, "--");
+        sendText(ControlTemperature, F("--"));
         return;
-	}
+    }
 
     sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + "C"); // one decimal place
 }
@@ -306,7 +336,7 @@ void HomePage::updateHumidity()
 {
     if (isnan(_lastHumidity))
     {
-        sendText(ControlHumidity, "--");
+        sendText(ControlHumidity, F("--"));
         return;
     }
 
@@ -317,22 +347,26 @@ void HomePage::updateBearing()
 {
     if (isnan(_lastBearing))
     {
-        sendText(ControlBearingText, "--");
+        sendText(ControlBearingText, F("--"));
         return;
     }
 
-    sendText(ControlBearingText, String(_lastBearing, 0) + String((char)176));
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), "%d°", (int)_lastBearing);
+    sendText(ControlBearingText, buffer);
 }
 
 void HomePage::updateSpeed()
 {
     if (isnan(_lastSpeed))
     {
-        sendText(ControlSpeed, "--");
+        sendText(ControlSpeed, F("--"));
         return;
     }
 
-    sendText(ControlSpeed, String(_lastSpeed, 0) + "kn");
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), "%dkn", (int)_lastSpeed);
+    sendText(ControlSpeed, buffer);
 }
 
 void HomePage::updateDirection()

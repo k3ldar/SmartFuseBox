@@ -5,14 +5,14 @@ ConfigCommandHandler::ConfigCommandHandler(HomePage* homePage)
 {
 }
 
-void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
+bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
     // Access the in-memory config
     Config* cfg = ConfigManager::getPtr();
     if (!cfg)
     {
         sendAckErr(sender, command, "Config not available");
-        return;
+        return true;
     }
 
     // Normalize command
@@ -32,7 +32,7 @@ void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             if (name.length() == 0)
             {
                 sendAckErr(sender, cmd, "Empty name", &params[0]);
-                return;
+                return true;
             }
 
             // enforce max length BOAT_NAME_MAX_LEN (defined in ConfigManager / Config.h)
@@ -56,13 +56,13 @@ void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             {
                 // fallback if they sent single token e.g. "RNAME 2" (no name) -> error
                 sendAckErr(sender, cmd, "Missing name", &params[0]);
-                return;
+                return true;
             }
 
             if (idx < 0 || idx >= (int)RELAY_COUNT)
             {
                 sendAckErr(sender, cmd, "Index out of range", &params[0]);
-                return;
+                return true;
             }
 
             // copy with truncation to relay name length
@@ -88,13 +88,13 @@ void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             if (button < 0 || button >= (int)HOME_BUTTONS)
             {
                 sendAckErr(sender, cmd, "Button out of range", &params[0]);
-                return;
+                return true;
             }
 
             if ((relay < 0 || relay >= (int)RELAY_COUNT) && relay != IMG_BTN_COLOR_DEFAULT)
             {
                 sendAckErr(sender, cmd, "Relay out of range (or 255 to clear)", &params[0]);
-                return;
+                return true;
             }
 
             cfg->homePageMapping[button] = (uint8_t)relay;
@@ -119,13 +119,13 @@ void ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             if (button < 0 || button >= (int)HOME_BUTTONS)
             {
                 sendAckErr(sender, cmd, "Button out of range", &params[0]);
-                return;
+                return true;
             }
             
             if ((buttonColor < IMG_BTN_COLOR_BLUE || buttonColor > (int)IMG_BTN_COLOR_YELLOW) && buttonColor != IMG_BTN_COLOR_DEFAULT)
             {
                 sendAckErr(sender, cmd, "Button out of range (or 255 to clear)", &params[0]);
-                return;
+                return true;
             }
 
             cfg->homePageButtonImage[button] = (uint8_t)buttonColor;

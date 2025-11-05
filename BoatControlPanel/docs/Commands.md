@@ -26,13 +26,13 @@ These are commands used to configure the system settings and can only be sent fr
 Common error responses you may see: `Missing param`, `Missing params`, `Missing name`, `Empty name`, `Index out of range`, `Slot out of range`, `Relay out of range (or 255 to clear)`, `EEPROM commit failed`, `Unknown config command`.
 
 
-## Acknowldement Commands
+## Acknowledgement Commands
 These commands are used in response to receiving a command.
 
 | Command | Example | Purpose |
 |---|---|---|
-| `ACK` — Acknowledement | `ACK:C4=Index out of range` | Indicates that the C4 command was processed and the index specified was out of range. |
-| `ACK` — Acknowledement | `ACK:C4=ok` | Indicates that the C4 command was processed successfully. |
+| `ACK` — Acknowledgement | `ACK:C4=Index out of range` | Indicates that the C4 command was processed and the index specified was out of range. |
+| `ACK` — Acknowledgement | `ACK:C4=ok` | Indicates that the C4 command was processed successfully. |
 
 ## Relay Control Commands
 These commands are used to control the relays on the Boat Control Panel. Commands can be sent from a computer or generated internally by the Boat Control Panel.
@@ -50,7 +50,12 @@ These commands are used to send sensor data from the Boat Control Panel to a com
 
 | Command | Example | Purpose |
 |---|---|---|
-| `S0` — Temperature | `S0:Temp=72.5` | Send temperature sensor data. Param format: `<sensor>=<value>`. |
-| `S1` — Humidity | `S1:Humidity=55.2` | Send humidity sensor data. Param format: `<sensor>=<value>`. |
-| `S2` — Voltage | `S2:Voltage=12.6` | Send voltage sensor data. Param format: `<sensor>=<value>`. |
-| `S3` — Current | `S3:Current=3.4` | Send current sensor data. Param format: `<sensor>=<value>`. |
+| `S0` — Temperature | `S0:v=72.5` | Send temperature sensor data. Param format: `<sensor>=<value>`. |
+| `S1` — Humidity | `S1:v=55.2` | Send humidity sensor data. Param format: `<sensor>=<value>`. |
+| `S2` — Bearing | `S2:v=128` | Send bearing sensor data. Param format: `<sensor>=<value>`. |
+| `S3` — Direction | `S3:v=NNW` | Send direction sensor data. Param format: `<sensor>=<value>`. |
+| `S4` — Speed | `S4:v=3.4` | Send speed sensor data. Param format: `<sensor>=<value>`. |
+| `S5` — Compass Temp | `S5:v=23.4` | Send compass temperature sensor data. Param format: `<sensor>=<value>`. |
+| `S6` — Water Level | `S6:v=3.4` | Send water level sensor data. Param format: `<sensor>=<value>`. |
+| `S7` — Water Pump Active  | `S7:v=1` | Send water pump active status. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
+| `S8` — Horn Active  | `S8:v=1` | Send horn active status. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
