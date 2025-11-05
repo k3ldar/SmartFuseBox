@@ -111,6 +111,9 @@
     <ClInclude Include="BaseBoatCommandHandler.h">
       <Filter>Header Files\CommandHandlers</Filter>
     </ClInclude>
+    <ClInclude Include="InterceptDebugHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Commands.md" />

@@ -41,7 +41,7 @@ struct FloatStateUpdate {
 };
 
 struct IntStateUpdate {
-    int value;
+    int16_t value;
 };
 
 struct BoolStateUpdate {

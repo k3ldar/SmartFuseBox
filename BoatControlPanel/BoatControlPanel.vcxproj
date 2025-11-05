@@ -108,6 +108,7 @@
     <ClInclude Include="ConfigCommandHandler.h" />
     <ClInclude Include="ConfigManager.h" />
     <ClInclude Include="AckCommandHandler.h" />
+    <ClInclude Include="InterceptDebugHandler.h" />
     <ClInclude Include="SensorCommandHandler.h" />
     <ClInclude Include="WarningManager.h" />
     <ClInclude Include="WarningPage.h" />

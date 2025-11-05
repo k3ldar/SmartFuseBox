@@ -5,7 +5,7 @@ SensorCommandHandler::SensorCommandHandler(SerialCommandManager* computerCommand
 {
 }
 
-void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
+bool SensorCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
     String cmd = command;
     cmd.trim();
@@ -15,7 +15,7 @@ void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     if (paramCount == 0)
     {
         sendDebugMessage("No parameters in sensor command", "SensorCommandHandler");
-        return;
+        return true;
     }
 
     String key = params[0].key;
@@ -30,7 +30,7 @@ void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     }
     else if (cmd == SensorHumidity)
     {
-        IntStateUpdate update = { val.toInt() };
+        IntStateUpdate update = { static_cast<int16_t>(val.toInt()) };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Humidity), &update);
 		sendAckOk(sender, cmd);
     }
@@ -48,7 +48,7 @@ void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     }
     else if (cmd == SensorSpeed)
     {
-        IntStateUpdate update = { val.toInt() };
+        IntStateUpdate update = { static_cast<int16_t>(val.toInt()) };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Speed), &update);
     }
     else if (cmd == SensorCompassTemp)
@@ -58,7 +58,7 @@ void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     }
     else if (cmd == SensorWaterLevel)
     {
-        IntStateUpdate update = { val.toInt() };
+        IntStateUpdate update = { static_cast<int16_t>(val.toInt()) };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::WaterLevel), &update);
     }
     else if (cmd == SensorWaterPumpActive)
@@ -74,10 +74,11 @@ void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     else
     {
         sendDebugMessage("Unknown or invalid Sensor command", "SensorCommandHandler");
-        return;
+        return false;
     }
 
     sendAckOk(sender, cmd);
+    return true;
 }
 
 const String* SensorCommandHandler::supportedCommands(size_t& count) const

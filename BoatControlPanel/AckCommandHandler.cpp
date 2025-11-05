@@ -33,7 +33,7 @@ bool AckCommandHandler::processRelayAck(SerialCommandManager* sender, const Stri
 
 }
 
-void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
+bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
     String cmd = command;
     cmd.trim();
@@ -42,7 +42,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     if (cmd != AckCommand)
     {
         sendDebugMessage("Unknown ACK command " + cmd, "AckCommandHandler");
-        return;
+        return false;
     }
 
 	// the first param indicates what is being acknowledged (F0=ok for heartbeat ack, R2=ok for relay command ack, etc.)
@@ -50,7 +50,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     if (paramCount == 0)
     {
         sendDebugMessage("No parameters in ACK command", "AckCommandHandler");
-        return;
+        return false;
 	}
 
     String key = params[0].key;
@@ -68,7 +68,7 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
         if (!isAllDigits(params[1].key) || !isAllDigits(params[1].value))
         {
             sendDebugMessage("invalid parameters in relay ACK", "AckCommandHandler");
-            return;
+            return true;
         }
 
 		uint8_t relayIndex = params[1].key.toInt();
@@ -80,6 +80,8 @@ void AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     {
 		sendDebugMessage("Unknown or invalid ACK command", "AckCommandHandler");
     }
+
+    return true;
 }
 
 const String* AckCommandHandler::supportedCommands(size_t& count) const

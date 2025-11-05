@@ -6,12 +6,12 @@
 #include "AckCommandHandler.h"
 #include "TLVCompass.h"
 #include "HomePage.h"
-#include "HomeCommandHandler.h"
 #include "WarningPage.h"
 #include "Config.h"
 #include "ConfigManager.h"
 #include "ConfigCommandHandler.h"
 #include "WarningManager.h"
+#include "InterceptDebugHandler.h"
 
 
 #define COMPUTER_SERIAL Serial
@@ -46,6 +46,7 @@ BaseDisplayPage* pages[] = { &homePage, &warningPage };
 NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
 
 // link command handlers
+InterceptDebugHandler interceptDebugHandler(&commandMgrComputer);
 SensorCommandHandler sensorCommandHandler(&commandMgrComputer, &nextion, &warningManager);
 
 // computer command handlers
@@ -59,7 +60,7 @@ unsigned long lastUpdate = 0;
 
 void setup()
 {
-    ISerialCommandHandler* linkHandlers[] = { &ackHandler, &sensorCommandHandler };
+    ISerialCommandHandler* linkHandlers[] = { &interceptDebugHandler, &ackHandler, &sensorCommandHandler };
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
