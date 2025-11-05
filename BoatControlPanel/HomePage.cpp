@@ -323,7 +323,8 @@ void HomePage::setCompassTemperature(float tempC)
 // --- Private update methods ---
 void HomePage::updateTemperature()
 {
-    if (isnan(_lastTemp)) {
+    if (isnan(_lastTemp))
+    {
         sendText(ControlTemperature, F("--"));
         return;
     }

@@ -32,7 +32,6 @@ bool SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     {
         IntStateUpdate update = { static_cast<int16_t>(val.toInt()) };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Humidity), &update);
-		sendAckOk(sender, cmd);
     }
     else if (cmd == SensorBearing)
     {

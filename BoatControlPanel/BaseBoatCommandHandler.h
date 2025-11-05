@@ -55,7 +55,7 @@ protected:
      * Override getHandlerIdentifier() to customize the identifier string.
      * 
      * @param message Debug message content
-	 * @param Command handler identifier
+	 * @param identifier Command handler identifier
      */
     void sendDebugMessage(const String& message, const String& identifier);
 
