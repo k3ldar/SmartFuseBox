@@ -94,10 +94,6 @@
     <ClCompile Include="WarningPage.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="HomeCommandHandler.h">
-      <FileType>CppCode</FileType>
-      <DeploymentContent>true</DeploymentContent>
-    </ClCompile>
     <ClCompile Include="HomePage.h">
       <FileType>CppCode</FileType>
       <DeploymentContent>true</DeploymentContent>

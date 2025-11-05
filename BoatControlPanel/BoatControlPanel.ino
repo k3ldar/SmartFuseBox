@@ -46,7 +46,6 @@ BaseDisplayPage* pages[] = { &homePage, &warningPage };
 NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
 
 // link command handlers
-HomeCommandHandler homeCommandHandler(&homePage, &commandMgrLink, &commandMgrComputer);
 SensorCommandHandler sensorCommandHandler(&commandMgrComputer, &nextion, &warningManager);
 
 // computer command handlers
@@ -60,7 +59,7 @@ unsigned long lastUpdate = 0;
 
 void setup()
 {
-    ISerialCommandHandler* linkHandlers[] = { &homeCommandHandler, &ackHandler, &sensorCommandHandler };
+    ISerialCommandHandler* linkHandlers[] = { &ackHandler, &sensorCommandHandler };
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 

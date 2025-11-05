@@ -61,9 +61,6 @@
     <ClCompile Include="SensorCommandHandler.cpp">
       <Filter>Source Files\CommandHandlers</Filter>
     </ClCompile>
-    <ClCompile Include="HomeCommandHandler.h">
-      <Filter>Header Files\CommandHandlers</Filter>
-    </ClCompile>
     <ClCompile Include="BaseBoatPage.cpp">
       <Filter>Source Files\Pages</Filter>
     </ClCompile>

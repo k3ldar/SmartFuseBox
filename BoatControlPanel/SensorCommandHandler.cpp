@@ -23,49 +23,50 @@ void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     String val = params[0].value;
     val.trim();
 
-    if (key == SensorTemperature)
+    if (cmd == SensorTemperature)
     {
         FloatStateUpdate update = { val.toFloat() };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Temperature), &update);
     }
-    else if (key = SensorHumidity)
+    else if (cmd == SensorHumidity)
     {
         IntStateUpdate update = { val.toInt() };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Humidity), &update);
+		sendAckOk(sender, cmd);
     }
-    else if (key = SensorBearing)
+    else if (cmd == SensorBearing)
     {
         FloatStateUpdate update = { val.toFloat() };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Bearing), &update);
     }
-    else if (key = SensorDirection)
+    else if (cmd == SensorDirection)
     {
         CharStateUpdate update = {};
         update.length = min(val.length(), (unsigned int)(CharStateUpdate::MAX_LENGTH - 1));
         val.toCharArray(update.value, CharStateUpdate::MAX_LENGTH);
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Direction), &update);
     }
-    else if (key = SensorSpeed)
+    else if (cmd == SensorSpeed)
     {
         IntStateUpdate update = { val.toInt() };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Speed), &update);
     }
-    else if (key == SensorCompassTemp)
+    else if (cmd == SensorCompassTemp)
     {
         FloatStateUpdate update = { val.toFloat() };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::CompassTemp), &update);
     }
-    else if (key = SensorWaterLevel)
+    else if (cmd == SensorWaterLevel)
     {
         IntStateUpdate update = { val.toInt() };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::WaterLevel), &update);
     }
-    else if (key = SensorWaterPumpActive)
+    else if (cmd == SensorWaterPumpActive)
     {
         BoolStateUpdate update = { val.toInt() > 0 };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::WaterPumpActive), &update);
     }
-    else if (key = SensorHornActive)
+    else if (cmd == SensorHornActive)
     {
         BoolStateUpdate update = { val.toInt() > 0 };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::SensorHornActive), &update);
@@ -73,7 +74,10 @@ void SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     else
     {
         sendDebugMessage("Unknown or invalid Sensor command", "SensorCommandHandler");
+        return;
     }
+
+    sendAckOk(sender, cmd);
 }
 
 const String* SensorCommandHandler::supportedCommands(size_t& count) const
