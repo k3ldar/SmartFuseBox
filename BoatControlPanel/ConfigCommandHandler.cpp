@@ -12,7 +12,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     if (!cfg)
     {
         sendAckErr(sender, command, "Config not available");
-        return false;
+        return true;
     }
 
     // Normalize command
