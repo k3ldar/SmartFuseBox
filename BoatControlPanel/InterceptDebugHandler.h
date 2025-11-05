@@ -15,7 +15,7 @@ public:
     {
         // This handler intercepts all commands for debugging purposes
         return true;
-	}
+    }
 
     bool handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount) override
     {
