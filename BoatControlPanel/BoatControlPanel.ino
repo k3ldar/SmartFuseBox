@@ -72,7 +72,7 @@ void setup()
     InitializeSerial(NEXTION_SERIAL, 19200);
     InitializeSerial(LINK_SERIAL, 9600, false);
 
-    commandMgrComputer.sendCommand("INIT", "Initializing Boat Control Panel");
+    commandMgrComputer.sendCommand(F("INIT"), F("Initializing Boat Control Panel"));
 
     // retrieve config settings
 
@@ -83,14 +83,14 @@ void setup()
 
     if (!compass.begin())
     {
-      commandMgrComputer.sendError("INIT", "Compass Failed");
+      commandMgrComputer.sendError(F("INIT"), F("Compass Failed"));
 
       while (1)
           delay(100);
     }
 
     nextion.begin();
-    commandMgrComputer.sendCommand("INIT", "Initialized");
+    commandMgrComputer.sendCommand(F("INIT"), F("Initialized"));
 }
 
 void loop()
@@ -120,7 +120,7 @@ void loop()
         }
         else
         {
-            commandMgrComputer.sendError("Compass update failed", "COMPASS");
+            commandMgrComputer.sendError(F("Compass update failed"), F("COMPASS"));
         }
     }
 }
@@ -128,13 +128,13 @@ void loop()
 void onLinkCommandReceived(SerialCommandManager* mgr)
 {
     String cmd = mgr->getCommand();
-    commandMgrComputer.sendError("Unknown command: " + cmd, "LINKHANDLER");
+    commandMgrComputer.sendError(String(F("Unknown command: ")) + cmd, F("LINKHANDLER"));
 }
 
 void onComputerCommandReceived(SerialCommandManager* mgr)
 {
     String cmd = mgr->getCommand();
-    commandMgrComputer.sendError("Unknown command: " + cmd, "PCHANDLER");
+    commandMgrComputer.sendError(String(F("Unknown command: ")) + cmd, F("PCHANDLER"));
 }
 
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection)

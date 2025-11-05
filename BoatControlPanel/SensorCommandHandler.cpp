@@ -14,7 +14,7 @@ bool SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
 
     if (paramCount == 0)
     {
-        sendDebugMessage("No parameters in sensor command", "SensorCommandHandler");
+        sendDebugMessage(F("No parameters in sensor command"), F("SensorCommandHandler"));
         return true;
     }
 
@@ -73,7 +73,7 @@ bool SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     }
     else
     {
-        sendDebugMessage("Unknown or invalid Sensor command", "SensorCommandHandler");
+        sendDebugMessage(F("Unknown or invalid Sensor command"), F("SensorCommandHandler"));
         return false;
     }
 

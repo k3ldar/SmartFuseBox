@@ -41,7 +41,7 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     // Validate command
     if (cmd != AckCommand)
     {
-        sendDebugMessage("Unknown ACK command " + cmd, "AckCommandHandler");
+        sendDebugMessage("Unknown ACK command " + cmd, F("AckCommandHandler"));
         return false;
     }
 
@@ -49,7 +49,7 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
 
     if (paramCount == 0)
     {
-        sendDebugMessage("No parameters in ACK command", "AckCommandHandler");
+        sendDebugMessage(F("No parameters in ACK command"), F("AckCommandHandler"));
         return false;
 	}
 
@@ -67,7 +67,7 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     {
         if (!isAllDigits(params[1].key) || !isAllDigits(params[1].value))
         {
-            sendDebugMessage("invalid parameters in relay ACK", "AckCommandHandler");
+            sendDebugMessage(F("invalid parameters in relay ACK"), F("AckCommandHandler"));
             return true;
         }
 
@@ -78,7 +78,7 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     }
 	else
     {
-		sendDebugMessage("Unknown or invalid ACK command", "AckCommandHandler");
+		sendDebugMessage(F("Unknown or invalid ACK command"), F("AckCommandHandler"));
     }
 
     return true;
