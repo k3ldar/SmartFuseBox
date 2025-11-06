@@ -14,12 +14,15 @@
 enum class WarningType : uint8_t {
     None = 0x00,                    // No warning
     ConnectionLost = 0x01,          // Link heartbeat lost
-    HighCompassTemperature = 0x02,         // Compass temperature threshold exceeded
+    HighCompassTemperature = 0x02,  // Compass temperature threshold exceeded
     LowBattery = 0x03,              // Battery voltage low
     SensorFailure = 0x04,           // Sensor communication failure
+    CompassFailure = 0x05,          // Compass failed to initialize
     
     // Add new warning types here (0x05 - 0xFF)
 };
+
+const uint8_t WarningCount = 6; // Update this if you add more warning types
 
 /**
  * @class WarningManager
