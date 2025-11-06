@@ -7,7 +7,7 @@ These are commands used to configure the system settings and can only be sent fr
 | Command | Example | Purpose |
 |---|---|---|
 | `F0` — Heart beat | `F0` | Send at rated intervals, if no ACK received indicates there is no connection available between control panel and fuse box. No params. |
-| `F1` — | `F1` | Unused |
+| `F1` — System Initialized | `F1` | System initialized |
 
 ## Configuration Commands
 These are commands used to configure the system settings and can only be sent from a computer, they are not used for internal communication.
@@ -42,7 +42,7 @@ These commands are used to control the relays on the Boat Control Panel. Command
 | `R0` — Turn All Off | `R0` | Indicates that the C4 command was processed and the index specified was out of range. |
 | `R1` — Turn All On | `R1` | Indicates that the C4 command was processed successfully. |
 | `R2` — Retrieve States | `R2` | Retrieve the state of all relays. |
-| `R3` — Set Relay State | `R3:3=1` (turn on relay 3) — `R3:5=0` (turn off relay 5) | Set the state of a specific relay. Param format: `<idx>=<state>`. `idx` must be 0..7 (`RELAY_COUNT`). `state` must be `0` (off) or `1` (on). |
+| `R3` — Relay State Set | `R3:3=1` (turn on relay 3) — `R3:5=0` (turn off relay 5) | Set the state of a specific relay. Param format: `<idx>=<state>`. `idx` must be 0..7 (`RELAY_COUNT`). `state` must be `0` (off) or `1` (on). |
 | `R4` — Relay State Get | `R4:3` (retrieves status of relay 3) — `R4:5` (returns status of relay 5). Param format: `<idx>`. `idx` must be 0..7 (`RELAY_COUNT`). |
 
 ## Sensor Commands
@@ -59,3 +59,14 @@ These commands are used to send sensor data from the Boat Control Panel to a com
 | `S6` — Water Level | `S6:v=3.4` | Send water level sensor data. Param format: `<sensor>=<value>`. |
 | `S7` — Water Pump Active  | `S7:v=1` | Send water pump active status. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
 | `S8` — Horn Active  | `S8:v=1` | Send horn active status. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
+
+## Warning Commands
+These commands are used to send warning data from the control panel to link/computer. WarningType corresponds to the enum in WarningManager.h.
+
+| Command | Example | Purpose |
+|---|---|---|
+| `W0` — Warnings Active | `W0:v=3` | Number of active warnings 3 in this example. Param format: `<value>=<count>`. |
+| `W1` — List Warnings | `W1` | Retrieve warning list. Param format: No parameters. |
+| `W2` — Warning Status | `W2:0x05=1` | Sends warning status for each warning. Param format: `<WarningType>=<bool>`. |
+| `W3` — Clear Warnings | `W3` | Clears all warning data. Param format: No Parameters. |
+| `W4` — Warning Set Status | `W4:0x06=1` | Adds or removes a warning to the list of warnings. Param format: `<WarningType>=<bool>`. |

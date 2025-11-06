@@ -1,17 +1,18 @@
-#include "SensorCommandHandler.h"
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
 
+#include "InterceptDebugHandler.h"
 #include "AckCommandHandler.h"
+#include "ConfigCommandHandler.h"
+#include "SensorCommandHandler.h"
+#include "WarningCommandHandler.h"
 #include "TLVCompass.h"
 #include "HomePage.h"
 #include "WarningPage.h"
 #include "Config.h"
 #include "ConfigManager.h"
-#include "ConfigCommandHandler.h"
 #include "WarningManager.h"
-#include "InterceptDebugHandler.h"
 
 
 #define COMPUTER_SERIAL Serial
@@ -48,6 +49,7 @@ NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]))
 // link command handlers
 InterceptDebugHandler interceptDebugHandler(&commandMgrComputer);
 SensorCommandHandler sensorCommandHandler(&commandMgrComputer, &nextion, &warningManager);
+WarningCommandHandler warningCommandHandler(&commandMgrComputer, &nextion, &warningManager);
 
 // computer command handlers
 ConfigCommandHandler configHandler(&homePage);
@@ -60,11 +62,11 @@ unsigned long lastUpdate = 0;
 
 void setup()
 {
-    ISerialCommandHandler* linkHandlers[] = { &interceptDebugHandler, &ackHandler, &sensorCommandHandler };
+    ISerialCommandHandler* linkHandlers[] = { &interceptDebugHandler, &ackHandler, &sensorCommandHandler, &warningCommandHandler };
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
-    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler };
+    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler, &warningCommandHandler };
     size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
     commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 
@@ -83,14 +85,12 @@ void setup()
 
     if (!compass.begin())
     {
-      commandMgrComputer.sendError(F("INIT"), F("Compass Failed"));
-
-      while (1)
-          delay(100);
+        warningManager.raiseWarning(WarningType::SensorFailure);
+        warningManager.raiseWarning(WarningType::CompassFailure);
     }
 
     nextion.begin();
-    commandMgrComputer.sendCommand(F("INIT"), F("Initialized"));
+    commandMgrComputer.sendCommand(F("F1:ok"), "");
 }
 
 void loop()
@@ -107,7 +107,7 @@ void loop()
     {
         lastUpdate = now;
 
-        if (compass.update(now))
+        if (!warningManager.isWarningActive(WarningType::CompassFailure))
         {
             // Only update HomePage if it's the currently active page
             if (nextion.getCurrentPage() == &homePage)
@@ -117,10 +117,6 @@ void loop()
                 homePage.setSpeed(21);
                 homePage.setCompassTemperature(compass.getTemperature());
             }
-        }
-        else
-        {
-            commandMgrComputer.sendError(F("Compass update failed"), F("COMPASS"));
         }
     }
 }
