@@ -7,7 +7,7 @@ These are commands used to configure the system settings and can only be sent fr
 | Command | Example | Purpose |
 |---|---|---|
 | `F0` — Heart beat | `F0` | Send at rated intervals, if no ACK received indicates there is no connection available between control panel and fuse box. No params. |
-| `F1` — System Initialized | `F1` | System initialized |
+| `F1` — System Initialized | `F1` | Sent by the system when initialization is complete to signal readiness. No params. Used to notify connected devices or software that the control panel is ready for operation. |
 
 ## Configuration Commands
 These are commands used to configure the system settings and can only be sent from a computer, they are not used for internal communication.

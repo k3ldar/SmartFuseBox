@@ -61,7 +61,7 @@ void WarningPage::updateWarningDisplay()
     if (!warningMgr)
         return;
 
-    String warningText = "";
+    String warningText;
     bool firstWarning = true;
 
     // Iterate through all defined warning types (skip None)

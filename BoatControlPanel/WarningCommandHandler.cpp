@@ -21,7 +21,7 @@ bool WarningCommandHandler::handleCommand(SerialCommandManager* sender, const St
     if (cmd == WarningsActive && paramCount == 0)
     {
         int count = 0;
-        for (uint8_t i = 1; i < 32; i++)
+        for (uint8_t i = 1; i < WarningCount; i++)
         {
             WarningType type = static_cast<WarningType>(i);
 
@@ -29,9 +29,6 @@ bool WarningCommandHandler::handleCommand(SerialCommandManager* sender, const St
             {
                 count++;
             }
-
-            if (i >= WarningCount - 1)
-                break;
         }
 
         StringKeyValue param = { "v", String(count) };
@@ -80,6 +77,9 @@ bool WarningCommandHandler::handleCommand(SerialCommandManager* sender, const St
     else if (cmd == WarningsClear && paramCount == 0)
     {
         _warningManager->clearAllWarnings();
+
+        sendAckOk(sender, cmd);
+        return true;
     }
     else if (cmd == WarningsAdd && paramCount == 1)
     {
@@ -112,9 +112,6 @@ bool WarningCommandHandler::handleCommand(SerialCommandManager* sender, const St
         sendDebugMessage(F("Unknown or invalid Warning command"), F("WarningCommandHandler"));
         return false;
     }
-
-    sendAckOk(sender, cmd);
-    return true;
 }
 
 bool WarningCommandHandler::convertWarningTypeFromString(const String& str, WarningType& outType)

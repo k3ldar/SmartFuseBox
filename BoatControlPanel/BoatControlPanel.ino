@@ -90,7 +90,8 @@ void setup()
     }
 
     nextion.begin();
-    commandMgrComputer.sendCommand(F("F1:ok"), "");
+    commandMgrComputer.sendCommand(F("F1"), "");
+    commandMgrLink.sendCommand(F("F1"), "");
 }
 
 void loop()
