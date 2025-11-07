@@ -132,8 +132,8 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
     if (relayIndex == 0xFF || relayIndex >= RELAY_COUNT)
         return;
 
-    // Get the relay name from config
-    String relayName = String(config->relayNames[relayIndex]);
+    // Get the relay short name from config (for home page display)
+    String relayName = String(config->relayShortNames[relayIndex]);
 
     SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
 
@@ -204,12 +204,12 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
                 setPicture(buttonName, newColor);
                 setPicture2(buttonName, newColor);
 
-                // Log the update for debugging
+                // Log the update for debugging (using short name)
                 SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
                 if (commandMgrComputer)
                 {
                     Config* config = getConfig();
-                    String relayName = config ? String(config->relayNames[update->relayIndex]) : String(update->relayIndex);
+                    String relayName = config ? String(config->relayShortNames[update->relayIndex]) : String(update->relayIndex);
                     commandMgrComputer->sendDebug(
                         relayName + " state updated to " + (update->isOn ? "ON" : "OFF"),
                         "HomePage"
@@ -393,8 +393,8 @@ void HomePage::configUpdated()
             // set picture control (button image) - control names in your Nextion might differ
             setPicture("b" + String(button + 1), _buttonImage[button]);
 
-            // Adjust control names to match your Nextion layout:
-            sendText(String("b") + String(button + 1), String(config->relayNames[relayIndex]));
+            // Use short name for home page display
+            sendText(String("b") + String(button + 1), String(config->relayShortNames[relayIndex]));
         }
         else
         {

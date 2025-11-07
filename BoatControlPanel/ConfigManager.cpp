@@ -75,13 +75,20 @@ void ConfigManager::resetToDefaults()
     // Default boat name
     strncpy(_cfg.boatName, "My Boat", BOAT_NAME_MAX_LEN);
 
-    // Default relay names
+    // Default relay names (both short and long)
     for (uint8_t i = 0; i < RELAY_COUNT; ++i)
     {
-        // default "R0", "R1", etc. limited to RELAY_NAME_MAX chars
-        char buf[RELAY_NAME_MAX_LEN + 1]{ 0 };
-        snprintf(buf, sizeof(buf), "R%u", (unsigned)i);
-        strncpy(_cfg.relayNames[i], buf, RELAY_NAME_MAX_LEN);
+        // Default short name: "R0", "R1", etc.
+        char shortBuf[RELAY_SHORT_NAME_MAX_LEN]{ 0 };
+        snprintf(shortBuf, sizeof(shortBuf), "R%u", (unsigned)i);
+        strncpy(_cfg.relayShortNames[i], shortBuf, RELAY_SHORT_NAME_MAX_LEN - 1);
+        _cfg.relayShortNames[i][RELAY_SHORT_NAME_MAX_LEN - 1] = '\0';
+
+        // Default long name: "Relay 0", "Relay 1", etc.
+        char longBuf[RELAY_LONG_NAME_MAX_LEN]{ 0 };
+        snprintf(longBuf, sizeof(longBuf), "Relay %u", (unsigned)i);
+        strncpy(_cfg.relayLongNames[i], longBuf, RELAY_LONG_NAME_MAX_LEN - 1);
+        _cfg.relayLongNames[i][RELAY_LONG_NAME_MAX_LEN - 1] = '\0';
     }
 
     // Default home page mapping: first four relays visible in order

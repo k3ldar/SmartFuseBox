@@ -116,11 +116,6 @@
     <ClInclude Include="WarningPage.h" />
     <ClInclude Include="__vm\.BoatControlPanel.vsarduino.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="docs\ExternalUpdatePattern.md" />
-    <None Include="HEARTBEAT_IMPLEMENTATION.md" />
-    <None Include="WARNING_SYSTEM_GUIDE.md" />
-  </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
   </PropertyGroup>

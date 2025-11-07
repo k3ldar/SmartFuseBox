@@ -23,7 +23,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     {
         if (paramCount >= 1)
         {
-            // Expect "C2:name=<value>" where value is the boat name (or just a single token)
+            // Expect "C3:name=<value>" where value is the boat name (or just a single token)
             String name = params[0].value;
             if (name.length() == 0)
                 name = params[0].key;
@@ -47,7 +47,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     }
     else if (cmd == ConfigRenameRelay)
     {
-        // Expect "C3:<idx>=<name>" where idx 0..7
+        // Expect "C4:<idx>=<shortName>" or "C4:<idx>=<shortName|longName>" where idx 0..7
         if (paramCount >= 1)
         {
             int idx = params[0].key.toInt();
@@ -65,10 +65,37 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 return true;
             }
 
-            // copy with truncation to relay name length
-            size_t maxLen = sizeof(cfg->relayNames[idx]) - 1;
-            strncpy(cfg->relayNames[idx], name.c_str(), maxLen);
-            cfg->relayNames[idx][maxLen] = '\0';
+            // Parse short and long names (format: "shortName|longName" or just "shortName")
+            int pipeIndex = name.indexOf('|');
+            String shortName;
+            String longName;
+
+            if (pipeIndex >= 0)
+            {
+                // Pipe character found - split into short and long names
+                shortName = name.substring(0, pipeIndex);
+                longName = name.substring(pipeIndex + 1);
+                shortName.trim();
+                longName.trim();
+            }
+            else
+            {
+                // No pipe character - use the same name for both short and long
+                shortName = name;
+                longName = name;
+                shortName.trim();
+                longName.trim();
+            }
+
+            // Copy short name with truncation to relay short name length
+            size_t maxShortLen = sizeof(cfg->relayShortNames[idx]) - 1;
+            strncpy(cfg->relayShortNames[idx], shortName.c_str(), maxShortLen);
+            cfg->relayShortNames[idx][maxShortLen] = '\0';
+
+            // Copy long name with truncation to relay long name length
+            size_t maxLongLen = sizeof(cfg->relayLongNames[idx]) - 1;
+            strncpy(cfg->relayLongNames[idx], longName.c_str(), maxLongLen);
+            cfg->relayLongNames[idx][maxLongLen] = '\0';
 
             sendAckOk(sender, cmd, &params[0]);
         }
@@ -153,13 +180,14 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     else if (cmd == ConfigGetSettings)
     {
         // return summary of config back to caller in multiple commands
-        // C2:<name>
+        // C1:<name>
         sender->sendCommand(ConfigRenameBoat, String(cfg->boatName));
 
-        // C3 entries
+        // C4 entries - send both short and long names in format: <idx>=<shortName|longName>
         for (uint8_t i = 0; i < RELAY_COUNT; ++i)
         {
-            sender->sendCommand(ConfigRenameRelay, String(i) + "=" + String(cfg->relayNames[i]));
+            String relayNames = String(i) + "=" + String(cfg->relayShortNames[i]) + "|" + String(cfg->relayLongNames[i]);
+            sender->sendCommand(ConfigRenameRelay, relayNames);
         }
 
         // C5 entries
