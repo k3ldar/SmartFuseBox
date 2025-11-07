@@ -2,17 +2,20 @@
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
 
-#include "InterceptDebugHandler.h"
+#include "InterceptDebugCommandHandler.h"
 #include "AckCommandHandler.h"
 #include "ConfigCommandHandler.h"
 #include "SensorCommandHandler.h"
 #include "WarningCommandHandler.h"
-#include "TLVCompass.h"
+
 #include "HomePage.h"
 #include "WarningPage.h"
+#include "ButtonsPage.h"
+
 #include "Config.h"
 #include "ConfigManager.h"
 #include "WarningManager.h"
+#include "TLVCompass.h"
 
 
 #define COMPUTER_SERIAL Serial
@@ -80,8 +83,14 @@ void setup()
 
     ConfigManager::begin();
 
-    if (ConfigManager::load())
-        homePage.configSet(ConfigManager::getPtr());
+    if (!ConfigManager::load())
+    {
+        warningManager.raiseWarning(WarningType::DefaultConfiguration);
+    }
+
+    Config* config = ConfigManager::getPtr();
+    homePage.configSet(config);
+    warningPage.configSet(config);
 
     if (!compass.begin())
     {
@@ -144,5 +153,8 @@ void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool w
 
         while (!serialPort && millis() < leave)
             delay(10);
+
+        if (serialPort)
+            delay(100);
     }
 }

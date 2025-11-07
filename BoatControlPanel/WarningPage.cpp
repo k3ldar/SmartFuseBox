@@ -38,6 +38,8 @@ String warningTypeToString(WarningType type)
 {
     switch (type)
     {
+    case WarningType::DefaultConfiguration:
+		return "Using Default Configuration";
     case WarningType::ConnectionLost:
         return "Connection Lost To Fuse Box";
     case WarningType::HighCompassTemperature:

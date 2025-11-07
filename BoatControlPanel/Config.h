@@ -33,7 +33,7 @@ const uint8_t IMG_BACK_BUTTON = 12;
 //
 // Keep struct packed and stable. Increase 'VERSION' when you change layout.
 // Packed POD for persistent configuration.
-const uint8_t VERSION = 1;
+const uint8_t VERSION = 0;
 const uint8_t RELAY_COUNT = 8;
 const uint8_t HOME_BUTTONS = 4;
 const uint8_t BOAT_NAME_MAX_LEN = 31; // max characters (inc null)

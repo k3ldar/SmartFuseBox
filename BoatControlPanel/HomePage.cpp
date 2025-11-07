@@ -33,8 +33,10 @@ void HomePage::begin()
 {
     // If config already supplied before begin, apply it
     if (getConfig())
+    {
         configUpdated();
-
+    }
+    
     setPicture("b1", IMG_BTN_COLOR_GREY); 
     setPicture("b2", IMG_BTN_COLOR_GREY); 
     setPicture("b3", IMG_BTN_COLOR_GREY); 
@@ -44,6 +46,11 @@ void HomePage::begin()
 
 void HomePage::onEnterPage()
 {
+    if (getConfig())
+    {
+        configUpdated();
+    }
+    
     // Request relay states to update button states
     getCommandMgrLink()->sendCommand("R2", "");
     _lastRefreshTime = millis();
@@ -377,11 +384,13 @@ void HomePage::updateDirection()
 void HomePage::configUpdated()
 {
     Config* config = getConfig();
+
     if (!config)
-		return;
+    {
+        return;
+    }
 
     // update Nextion with config details
-
     // Example: apply home page mapping and enabled mask to UI slots
     for (uint8_t button = 0; button < HOME_BUTTONS; ++button)
     {
@@ -394,7 +403,8 @@ void HomePage::configUpdated()
             setPicture("b" + String(button + 1), _buttonImage[button]);
 
             // Use short name for home page display
-            sendText(String("b") + String(button + 1), String(config->relayShortNames[relayIndex]));
+            String shortName = String(config->relayShortNames[relayIndex]);
+            sendText(String("b") + String(button + 1), shortName);
         }
         else
         {
@@ -402,12 +412,18 @@ void HomePage::configUpdated()
             _buttonOn[button] = false;
             _buttonImage[button] = IMG_BTN_COLOR_GREY;
             setPicture("b" + String(button + 1), _buttonImage[button]);
-            sendText(String("btn") + String(button + 1), ""); // clear label
+            sendText(String("b") + String(button + 1), ""); 
         }
     }
 
     // Update the boat name
-    sendText(ControlBoatName, String(config->boatName)); 
+    String boatName = String(config->boatName);
+    sendText(ControlBoatName, boatName);
+    
+    if (commandMgrComputer)
+    {
+        commandMgrComputer->sendDebug("Boat name set to: " + boatName, F("HomePage"));
+    }
 }
 
 uint8_t HomePage::getButtonColor(uint8_t buttonIndex, bool isOn)
