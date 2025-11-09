@@ -18,5 +18,4 @@ public:
 private:
     // Parameter processing helpers
     bool processHeartbeatAck(SerialCommandManager* sender, const String& key, const String& value);
-    bool processRelayAck(SerialCommandManager* sender, const String& key, const String& value);
 };

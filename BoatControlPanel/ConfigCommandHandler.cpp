@@ -23,7 +23,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     {
         if (paramCount >= 1)
         {
-            // Expect "C2:name=<value>" where value is the boat name (or just a single token)
+            // Expect "C3:name=<value>" where value is the boat name (or just a single token)
             String name = params[0].value;
             if (name.length() == 0)
                 name = params[0].key;
@@ -47,10 +47,10 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     }
     else if (cmd == ConfigRenameRelay)
     {
-        // Expect "C3:<idx>=<name>" where idx 0..7
+        // Expect "C4:<idx>=<shortName>" or "C4:<idx>=<shortName|longName>" where idx 0..7
         if (paramCount >= 1)
         {
-            int idx = params[0].key.toInt();
+            uint8_t idx = params[0].key.toInt();
             String name = params[0].value;
             if (name.length() == 0)
             {
@@ -59,16 +59,43 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 return true;
             }
 
-            if (idx < 0 || idx >= (int)RELAY_COUNT)
+            if (idx < 0 || idx >= ConfigRelayCount)
             {
                 sendAckErr(sender, cmd, "Index out of range", &params[0]);
                 return true;
             }
 
-            // copy with truncation to relay name length
-            size_t maxLen = sizeof(cfg->relayNames[idx]) - 1;
-            strncpy(cfg->relayNames[idx], name.c_str(), maxLen);
-            cfg->relayNames[idx][maxLen] = '\0';
+            // Parse short and long names (format: "shortName|longName" or just "shortName")
+            int pipeIndex = name.indexOf('|');
+            String shortName;
+            String longName;
+
+            if (pipeIndex >= 0)
+            {
+                // Pipe character found - split into short and long names
+                shortName = name.substring(0, pipeIndex);
+                longName = name.substring(pipeIndex + 1);
+                shortName.trim();
+                longName.trim();
+            }
+            else
+            {
+                // No pipe character - use the same name for both short and long
+                shortName = name;
+                longName = name;
+                shortName.trim();
+                longName.trim();
+            }
+
+            // Copy short name with truncation to relay short name length
+            size_t maxShortLen = sizeof(cfg->relayShortNames[idx]) - 1;
+            strncpy(cfg->relayShortNames[idx], shortName.c_str(), maxShortLen);
+            cfg->relayShortNames[idx][maxShortLen] = '\0';
+
+            // Copy long name with truncation to relay long name length
+            size_t maxLongLen = sizeof(cfg->relayLongNames[idx]) - 1;
+            strncpy(cfg->relayLongNames[idx], longName.c_str(), maxLongLen);
+            cfg->relayLongNames[idx][maxLongLen] = '\0';
 
             sendAckOk(sender, cmd, &params[0]);
         }
@@ -82,22 +109,22 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         // Expect "MAP <button>=<relay>" where button 0..3, relay 0..7 (or 255 to unmap)
         if (paramCount >= 1)
         {
-            int button = params[0].key.toInt();
-            int relay = params[0].value.toInt(); // if value empty, toInt() -> 0
+            uint8_t button = params[0].key.toInt();
+            uint8_t relay = params[0].value.toInt(); // if value empty, toInt() -> 0
 
-            if (button < 0 || button >= (int)HOME_BUTTONS)
+            if (button < 0 || button >= ConfigHomeButtons)
             {
                 sendAckErr(sender, cmd, "Button out of range", &params[0]);
                 return true;
             }
 
-            if ((relay < 0 || relay >= (int)RELAY_COUNT) && relay != IMG_BTN_COLOR_DEFAULT)
+            if ((relay < 0 || relay >= (int)ConfigRelayCount) && relay != ImageButtonColorDefault)
             {
                 sendAckErr(sender, cmd, "Relay out of range (or 255 to clear)", &params[0]);
                 return true;
             }
 
-            cfg->homePageMapping[button] = (uint8_t)relay;
+            cfg->homePageMapping[button] = relay;
             sendAckOk(sender, cmd, &params[0]);
         }
         else
@@ -105,7 +132,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             sendAckErr(sender, cmd, "Missing params");
         }
     }
-    else if (command == ConfigSetHomeButtonColor) 
+    else if (command == ConfigSetButtonColor) 
     {
         // Expect "MAP <button>=<color>" where button 0..3, image 0..5 (or 255 to unmap)
         if (paramCount >= 1)
@@ -116,19 +143,19 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             if (buttonColor < 0xFF)
 			    buttonColor += 2; // Adjust to match BTN_COLOR_* constants (2..7), 255 to clear
 
-            if (button < 0 || button >= (int)HOME_BUTTONS)
+            if (button < 0 || button >= (int)ConfigRelayCount)
             {
                 sendAckErr(sender, cmd, "Button out of range", &params[0]);
                 return true;
             }
             
-            if ((buttonColor < IMG_BTN_COLOR_BLUE || buttonColor > (int)IMG_BTN_COLOR_YELLOW) && buttonColor != IMG_BTN_COLOR_DEFAULT)
+            if ((buttonColor < ImageButtonColorBlue || buttonColor > (int)ImageButtonColorYellow) && buttonColor != ImageButtonColorDefault)
             {
                 sendAckErr(sender, cmd, "Button out of range (or 255 to clear)", &params[0]);
                 return true;
             }
 
-            cfg->homePageButtonImage[button] = (uint8_t)buttonColor;
+            cfg->buttonImage[button] = (uint8_t)buttonColor;
             sendAckOk(sender, cmd, &params[0]);
         }
         else
@@ -153,26 +180,27 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     else if (cmd == ConfigGetSettings)
     {
         // return summary of config back to caller in multiple commands
-        // C2:<name>
+        // C1:<name>
         sender->sendCommand(ConfigRenameBoat, String(cfg->boatName));
 
-        // C3 entries
-        for (uint8_t i = 0; i < RELAY_COUNT; ++i)
+        // C4 entries - send both short and long names in format: <idx>=<shortName|longName>
+        for (uint8_t i = 0; i < ConfigRelayCount; ++i)
         {
-            sender->sendCommand(ConfigRenameRelay, String(i) + "=" + String(cfg->relayNames[i]));
+            String relayNames = String(i) + "=" + String(cfg->relayShortNames[i]) + "|" + String(cfg->relayLongNames[i]);
+            sender->sendCommand(ConfigRenameRelay, relayNames);
         }
 
         // C5 entries
-        for (uint8_t s = 0; s < HOME_BUTTONS; ++s)
+        for (uint8_t s = 0; s < ConfigHomeButtons; ++s)
         {
             sender->sendCommand(ConfigMapHomeButton, String(s) + "=" + String(cfg->homePageMapping[s]));
         }
 
         // C6 Send home page button color mappings
-        for (uint8_t i = 0; i < HOME_BUTTONS; i++)
+        for (uint8_t i = 0; i < ConfigRelayCount; i++)
         {
-            String colorMapping = String(i) + "=" + String(cfg->homePageButtonImage[i]);
-            sender->sendCommand(ConfigSetHomeButtonColor, colorMapping);
+            String colorMapping = String(i) + "=" + String(cfg->buttonImage[i]);
+            sender->sendCommand(ConfigSetButtonColor, colorMapping);
         }
 
         sendAckOk(sender, cmd);
@@ -196,7 +224,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
 const String* ConfigCommandHandler::supportedCommands(size_t& count) const
 {
     static const String cmds[] = { ConfigSaveSettings, ConfigGetSettings, ConfigResetSettings, ConfigRenameBoat,
-        ConfigRenameRelay, ConfigMapHomeButton, ConfigSetHomeButtonColor };
+        ConfigRenameRelay, ConfigMapHomeButton, ConfigSetButtonColor };
     count = sizeof(cmds) / sizeof(cmds[0]);
     return cmds;
 }

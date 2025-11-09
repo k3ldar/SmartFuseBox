@@ -80,6 +80,7 @@
       <FileType>CppCode</FileType>
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="RelayPage.cpp" />
     <ClCompile Include="ConfigCommandHandler.cpp" />
     <ClCompile Include="HomePage.cpp">
       <DeploymentContent>true</DeploymentContent>
@@ -104,7 +105,9 @@
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
     <ClInclude Include="BaseBoatCommandHandler.h" />
-    <ClInclude Include="BoatControlPanel\BaseBoatPage.h" />
+    <ClInclude Include="BaseBoatPage.h" />
+    <ClInclude Include="NextionIds.h" />
+    <ClInclude Include="RelayPage.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="ConfigCommandHandler.h" />
     <ClInclude Include="ConfigManager.h" />
@@ -115,15 +118,6 @@
     <ClInclude Include="WarningManager.h" />
     <ClInclude Include="WarningPage.h" />
     <ClInclude Include="__vm\.BoatControlPanel.vsarduino.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Commands.md">
-      <SubType>
-      </SubType>
-    </None>
-    <None Include="docs\ExternalUpdatePattern.md" />
-    <None Include="HEARTBEAT_IMPLEMENTATION.md" />
-    <None Include="WARNING_SYSTEM_GUIDE.md" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

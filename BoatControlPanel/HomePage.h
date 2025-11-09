@@ -6,6 +6,7 @@
 
 #include "Config.h"
 #include "BaseBoatPage.h"
+#include "NextionIds.h"
 
 class HomePage : public BaseBoatPage {
 private:
@@ -17,11 +18,11 @@ private:
     String _lastDirection = "";
     float _lastCompassTemp = NAN;
     byte _compassTempAboveNorm = 0;
-	bool _buttonOn[HOME_BUTTONS] = { false, false, false, false };
-	byte _buttonImage[HOME_BUTTONS] = { IMG_BTN_COLOR_GREY, IMG_BTN_COLOR_GREY, IMG_BTN_COLOR_GREY, IMG_BTN_COLOR_GREY };
-	const byte _buttonImageOn[HOME_BUTTONS] = { IMG_BTN_COLOR_BLUE, IMG_BTN_COLOR_BLUE, IMG_BTN_COLOR_BLUE, IMG_BTN_COLOR_BLUE };
+	bool _buttonOn[ConfigHomeButtons] = { false, false, false, false };
+	byte _buttonImage[ConfigHomeButtons] = { ImageButtonColorGrey, ImageButtonColorGrey, ImageButtonColorGrey, ImageButtonColorGrey };
+	const byte _buttonImageOn[ConfigHomeButtons] = { ImageButtonColorBlue, ImageButtonColorBlue, ImageButtonColorBlue, ImageButtonColorBlue };
 
-    uint8_t _slotToRelay[HOME_BUTTONS] = { 0xFF, 0xFF, 0xFF, 0xFF }; // map home slots 0..3 -> relay index 0..7 or 0xFF empty
+    uint8_t _slotToRelay[ConfigHomeButtons] = { 0xFF, 0xFF, 0xFF, 0xFF }; // map home slots 0..3 -> relay index 0..7 or 0xFF empty
 
     // Internal methods to update the display
     void updateTemperature();
@@ -29,12 +30,11 @@ private:
     void updateBearing();
     void updateSpeed();
     void updateDirection();
-
-    uint8_t getButtonColor(uint8_t buttonIndex, bool isOn);
+    void updateAllDisplayItems();
 
 protected:
     // Required overrides
-    uint8_t getPageId() const override { return PAGE_HOME; }
+    uint8_t getPageId() const override { return PageHome; }
     void begin() override;
     void refresh(unsigned long now) override;
 

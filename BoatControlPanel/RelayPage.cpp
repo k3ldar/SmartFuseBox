@@ -1,0 +1,228 @@
+#include "RelayPage.h"
+
+
+// Nextion Names/Ids on current Home Page
+constexpr uint8_t Button1 = 4; // b1
+constexpr uint8_t Button2 = 5; // b2
+constexpr uint8_t Button3 = 6; // b3
+constexpr uint8_t Button4 = 7; // b4
+constexpr uint8_t Button5 = 8; // b5
+constexpr uint8_t Button6 = 9; // b6
+constexpr uint8_t Button7 = 10; // b7
+constexpr uint8_t Button8 = 11; // b8
+constexpr uint8_t ButtonNext = 3;
+constexpr uint8_t ButtonPrevious = 2;
+constexpr uint8_t ButtonIdOffset = 4; // Offset to map button IDs to array indices
+
+constexpr unsigned long RefreshIntervalMs = 10000;
+
+
+RelayPage::RelayPage(Stream* serialPort,
+    WarningManager* warningMgr,
+    SerialCommandManager* commandMgrLink,
+    SerialCommandManager* commandMgrComputer)
+    : BaseBoatPage(serialPort, warningMgr, commandMgrLink, commandMgrComputer)
+{
+    for (uint8_t i = 0; i < ConfigRelayCount; ++i)
+    {
+		_buttonImage[i] = ImageButtonColorGrey + ImageButtonColorOffset;
+		_buttonImageOn[i] = ImageButtonColorBlue + ImageButtonColorOffset;
+	}
+}
+
+void RelayPage::begin()
+{
+    // If config already supplied before begin, apply it
+    if (getConfig())
+    {
+        configUpdated();
+    }
+
+    for (uint8_t i = 0; i < ConfigRelayCount; ++i)
+    {
+        setPicture("b" + String(i + 1), ImageButtonColorGrey + ImageButtonColorOffset);
+        setPicture2("b" + String(i + 1), ImageButtonColorGrey + ImageButtonColorOffset);
+	}
+}
+
+void RelayPage::onEnterPage()
+{
+    if (getConfig())
+    {
+        configUpdated();
+    }
+
+    // Request relay states to update button states
+    getCommandMgrLink()->sendCommand("R2", "");
+    _lastRefreshTime = millis();
+}
+
+void RelayPage::refresh(unsigned long now)
+{
+    // Send R2 command every 10 seconds to refresh relay states
+    if (now - _lastRefreshTime >= RefreshIntervalMs)
+    {
+        getCommandMgrComputer()->sendDebug(F("Sending R2"), F("RelayPage"));
+        _lastRefreshTime = now;
+        getCommandMgrLink()->sendCommand("R2", "");
+    }
+}
+
+// Handle touch events for buttons
+void RelayPage::handleTouch(uint8_t compId, uint8_t eventType)
+{
+    // Map component ID to button index
+    uint8_t buttonIndex = InvalidButtonIndex;
+    switch (compId)
+    {
+    case Button1:
+    case Button2:
+    case Button3:
+    case Button4:
+    case Button5:
+    case Button6:
+    case Button7:
+    case Button8:
+        buttonIndex = compId - ButtonIdOffset;
+        break;
+
+    case ButtonNext:
+        setPage(PageHome);
+        return;
+
+    case ButtonPrevious:
+        setPage(PageHome);
+        return;
+
+    default:
+        return;
+    }
+
+    Config* config = getConfig();
+    // Check if we have a valid config and the button is mapped to a relay
+    if (!config || buttonIndex >= ConfigRelayCount)
+    {
+        Serial.println("Invalid config or button index");
+        return;
+    }
+
+    uint8_t relayIndex = _slotToRelay[buttonIndex];
+
+    // Check if this button slot has a valid relay mapping
+    if (relayIndex == 0xFF || relayIndex >= ConfigRelayCount)
+    {
+        Serial.println("Invalid relay mapping");
+        return;
+    }
+
+    // Get the relay long name from config (for home page display)
+    String relayName = String(config->relayLongNames[relayIndex]);
+
+    SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
+
+    if (eventType == EventPress)
+    {
+        if (commandMgrComputer)
+        {
+            commandMgrComputer->sendDebug(relayName + String(F(" pressed")), F("RelayPage"));
+        }
+    }
+    else if (eventType == EventRelease)
+    {
+        if (commandMgrComputer)
+        {
+            commandMgrComputer->sendDebug(relayName + String(F(" released")), F("RelayPage"));
+        }
+
+        // Toggle button state
+        _buttonOn[buttonIndex] = !_buttonOn[buttonIndex];
+
+        // Get the appropriate color based on the new state
+        uint8_t newColor = getButtonColor(buttonIndex, _buttonOn[buttonIndex], ConfigRelayCount);
+        newColor += ImageButtonColorOffset;
+        _buttonImage[buttonIndex] = newColor;
+
+        // Update the button appearance
+        setPicture("b" + String(buttonIndex), newColor);
+        setPicture2("b" + String(buttonIndex), newColor);
+
+        // Send relay command
+        String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? "=1" : "=0");
+        SerialCommandManager* commandMgrLink = getCommandMgrLink();
+        if (commandMgrLink)
+        {
+            commandMgrLink->sendCommand("R3", cmd);
+        }
+    }
+}
+
+void RelayPage::handleExternalUpdate(uint8_t updateType, const void* data)
+{
+	Serial.println("RelayPage::handleExternalUpdate called");
+    // Call base class first to handle heartbeat ACKs
+    BaseBoatPage::handleExternalUpdate(updateType, data);
+
+    if (updateType == static_cast<uint8_t>(PageUpdateType::RelayState) && data != nullptr)
+    {
+        const RelayStateUpdate* update = static_cast<const RelayStateUpdate*>(data);
+
+        // Find if this relay is mapped to any button on this page
+        for (uint8_t buttonIndex = 0; buttonIndex < ConfigRelayCount; ++buttonIndex)
+        {
+            if (_slotToRelay[buttonIndex] == update->relayIndex)
+            {
+                // Update internal state
+                _buttonOn[buttonIndex] = update->isOn;
+
+                // Get the appropriate color for the new state
+                uint8_t newColor = getButtonColor(buttonIndex, update->isOn, ConfigRelayCount);
+				newColor += ImageButtonColorOffset;
+                _buttonImage[buttonIndex] = newColor;
+
+                // Update the button appearance on display
+                String buttonName = "b" + String(buttonIndex);
+                setPicture(buttonName, newColor);
+                setPicture2(buttonName, newColor);
+
+                // Log the update for debugging (using Long name)
+                SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
+                if (commandMgrComputer)
+                {
+                    Config* config = getConfig();
+                    String relayName = config ? String(config->relayLongNames[update->relayIndex]) : String(update->relayIndex);
+                    commandMgrComputer->sendDebug(
+                        relayName + " state updated to " + (update->isOn ? "ON" : "OFF"),
+                        "RelayPage"
+                    );
+                }
+
+                break;
+            }
+        }
+    }
+}
+
+void RelayPage::configUpdated()
+{
+    Config* config = getConfig();
+
+    if (!config)
+    {
+        return;
+    }
+
+    for (uint8_t button = 0; button < ConfigRelayCount; ++button)
+    {
+        _slotToRelay[button] = button;
+
+        // Initialize button to OFF state (grey)
+        _buttonOn[button] = false;
+        _buttonImage[button] = ImageButtonColorGrey + ImageButtonColorOffset;
+
+        setPicture("b" + String(button), ImageButtonColorGrey + ImageButtonColorOffset);
+        setPicture2("b" + String(button), ImageButtonColorGrey + ImageButtonColorOffset);
+
+        String longName = String(config->relayLongNames[button]);
+        sendText("b" + String(button), longName);
+    }
+}

@@ -2,10 +2,10 @@
 #include <NextionControl.h>
 
 // Nextion Names/Ids on Warning Page
-const uint8_t ButtonPrevious = 2;
-const uint8_t ButtonNext = 3;
-const char WarningListComponentName[] = "t1";
-const char WarningHeader[] = "t2";
+constexpr uint8_t ButtonPrevious = 2;
+constexpr uint8_t ButtonNext = 3;
+constexpr char WarningListComponentName[] = "t1";
+constexpr char WarningHeader[] = "t2";
 
 
 WarningPage::WarningPage(Stream* serialPort,
@@ -38,6 +38,8 @@ String warningTypeToString(WarningType type)
 {
     switch (type)
     {
+    case WarningType::DefaultConfiguration:
+		return "Using Default Configuration";
     case WarningType::ConnectionLost:
         return "Connection Lost To Fuse Box";
     case WarningType::HighCompassTemperature:
@@ -61,7 +63,7 @@ void WarningPage::updateWarningDisplay()
     if (!warningMgr)
         return;
 
-    String warningText = "";
+    String warningText;
     bool firstWarning = true;
 
     // Iterate through all defined warning types (skip None)
@@ -135,11 +137,11 @@ void WarningPage::handleTouch(uint8_t compId, uint8_t eventType)
     switch (compId)
     {
     case ButtonPrevious:
-        setPage(PAGE_HOME);
+        setPage(PageHome);
         break;
 
     case ButtonNext:
-        setPage(PAGE_HOME);
+        setPage(PageRelay);
         break;
     }
 }

@@ -27,3 +27,33 @@ void BaseBoatPage::configUpdated()
 {
     // Default implementation - override in derived classes if needed
 }
+
+uint8_t BaseBoatPage::getButtonColor(uint8_t buttonIndex, bool isOn, uint8_t maxButtons)
+{
+    Config* config = getConfig();
+    if (!config || buttonIndex >= maxButtons)
+    {
+        // Default: grey off, blue on
+        return isOn ? ImageButtonColorBlue : ImageButtonColorGrey;
+    }
+
+    if (isOn)
+    {
+        // Check if a custom color is configured for this button
+        uint8_t configuredColor = config->buttonImage[buttonIndex];
+        if (configuredColor != ImageButtonColorDefault &&
+            configuredColor >= ImageButtonColorBlue &&
+            configuredColor <= ImageButtonColorYellow)
+        {
+            return configuredColor;
+        }
+
+        // Default ON color is blue
+        return ImageButtonColorBlue;
+    }
+    else
+    {
+        // OFF state always uses grey
+        return ImageButtonColorGrey;
+    }
+}

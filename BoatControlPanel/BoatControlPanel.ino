@@ -2,17 +2,20 @@
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
 
-#include "InterceptDebugHandler.h"
+#include "InterceptDebugCommandHandler.h"
 #include "AckCommandHandler.h"
 #include "ConfigCommandHandler.h"
 #include "SensorCommandHandler.h"
 #include "WarningCommandHandler.h"
-#include "TLVCompass.h"
+
 #include "HomePage.h"
 #include "WarningPage.h"
+#include "RelayPage.h"
+
 #include "Config.h"
 #include "ConfigManager.h"
 #include "WarningManager.h"
+#include "TLVCompass.h"
 
 
 #define COMPUTER_SERIAL Serial
@@ -20,10 +23,10 @@
 #define LINK_SERIAL Serial2
 
 
-const unsigned long UpdateIntervalMs = 600;
-const unsigned long SerialInitTimeoutMs = 300;
-const unsigned long HeartbeatIntervalMs = 1000;
-const unsigned long HeartbeatTimeoutMs = 3000;
+constexpr unsigned long UpdateIntervalMs = 600;
+constexpr unsigned long SerialInitTimeoutMs = 300;
+constexpr unsigned long HeartbeatIntervalMs = 1000;
+constexpr unsigned long HeartbeatTimeoutMs = 3000;
 
 // forward declares
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection = false);
@@ -43,7 +46,8 @@ WarningManager warningManager(&commandMgrLink, HeartbeatIntervalMs, HeartbeatTim
 // Nextion display setup
 HomePage homePage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
 WarningPage warningPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
-BaseDisplayPage* pages[] = { &homePage, &warningPage };
+RelayPage relayPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+BaseDisplayPage* pages[] = { &homePage, &warningPage, &relayPage };
 NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
 
 // link command handlers
@@ -59,6 +63,7 @@ AckCommandHandler ackHandler(&commandMgrComputer, &nextion, &warningManager);
 
 // Timers
 unsigned long lastUpdate = 0;
+uint8_t speed = 0;
 
 void setup()
 {
@@ -66,7 +71,7 @@ void setup()
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
-    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler, &warningCommandHandler };
+    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler, &sensorCommandHandler, &warningCommandHandler };
     size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
     commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 
@@ -74,14 +79,20 @@ void setup()
     InitializeSerial(NEXTION_SERIAL, 19200);
     InitializeSerial(LINK_SERIAL, 9600, false);
 
-    commandMgrComputer.sendCommand(F("INIT"), F("Initializing Boat Control Panel"));
-
     // retrieve config settings
-
     ConfigManager::begin();
 
-    if (ConfigManager::load())
-        homePage.configSet(ConfigManager::getPtr());
+    if (!ConfigManager::load())
+    {
+        warningManager.raiseWarning(WarningType::DefaultConfiguration);
+    }
+
+    Config* config = ConfigManager::getPtr();
+    homePage.configSet(config);
+    warningPage.configSet(config);
+	relayPage.configSet(config);
+
+    nextion.begin();
 
     if (!compass.begin())
     {
@@ -89,8 +100,9 @@ void setup()
         warningManager.raiseWarning(WarningType::CompassFailure);
     }
 
-    nextion.begin();
-    commandMgrComputer.sendCommand(F("F1:ok"), "");
+    commandMgrComputer.sendCommand(F("F1"), "");
+    commandMgrLink.sendCommand(F("F1"), "");
+	nextion.sendCommand(F("page 1"));
 }
 
 void loop()
@@ -112,11 +124,21 @@ void loop()
             // Only update HomePage if it's the currently active page
             if (nextion.getCurrentPage() == &homePage)
             {
+                if (speed > 40)
+                    speed = 0;
+                else
+					speed += 2;
+
                 homePage.setBearing(compass.getHeading());
                 homePage.setDirection(compass.getDirection());
-                homePage.setSpeed(21);
+                homePage.setSpeed(speed);
                 homePage.setCompassTemperature(compass.getTemperature());
             }
+            else
+            {
+				commandMgrComputer.sendDebug(F("Home page is not current page, skipping compass update"), F("loop"));
+            }
+
         }
     }
 }
@@ -143,5 +165,8 @@ void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool w
 
         while (!serialPort && millis() < leave)
             delay(10);
+
+        if (serialPort)
+            delay(100);
     }
 }

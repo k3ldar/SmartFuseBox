@@ -5,13 +5,7 @@
 #include <SerialCommandManager.h>
 #include "Config.h"
 #include "WarningManager.h"
-
-const uint8_t PAGE_HOME = 0;
-const uint8_t PAGE_WARNING = 1;
-const uint8_t PAGE_BUTTONS = 2;
-
-const uint8_t ImageWarning = 10;
-const uint8_t ImageBlank = 11;
+#include "NextionIds.h"
 
 // Update type constants for external updates
 enum class PageUpdateType : uint8_t {
@@ -51,9 +45,9 @@ struct BoolStateUpdate {
 // Data structure for string/text updates (e.g., direction like "NNW", "SE")
 // Fixed size to avoid flexible array member issues in C++
 struct CharStateUpdate {
-    static const uint8_t MAX_LENGTH = 16; // Sufficient for compass directions, status strings, etc.
+    static const uint8_t MaxLength = 16; // Sufficient for compass directions, status strings, etc.
     uint8_t length;           // Actual length of the string (not including null terminator)
-    char value[MAX_LENGTH];   // Fixed-size buffer for the string (null-terminated)
+    char value[MaxLength];   // Fixed-size buffer for the string (null-terminated)
 };
 
 /**
@@ -118,6 +112,12 @@ protected:
      * @return Pointer to the WarningManager
      */
     WarningManager* getWarningManager() const { return _warningManager; }
+
+    /**
+	* @brief Get the appropriate button color based on state.
+	* @return Color index for the button
+     */
+    uint8_t getButtonColor(uint8_t buttonIndex, bool isOn, uint8_t maxButtons);
 
 public:
     

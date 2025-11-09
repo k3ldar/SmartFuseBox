@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BoatControlPanel", "BoatCon
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
-		docs\ExternalUpdatePattern.md = docs\ExternalUpdatePattern.md
+		docs\Commands.md = docs\Commands.md
 	EndProjectSection
 EndProject
 Global
