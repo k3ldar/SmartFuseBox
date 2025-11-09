@@ -20,7 +20,7 @@ enum class WarningType : uint8_t {
     SensorFailure = 0x05,           // Sensor communication failure
     CompassFailure = 0x06,          // Compass failed to initialize
     
-    // Add new warning types here (0x05 - 0xFF)
+    // Add new warning types here (0x07 - 0xFF)
 };
 
 const uint8_t WarningCount = 7; // Update this if you add more warning types

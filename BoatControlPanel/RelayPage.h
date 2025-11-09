@@ -12,10 +12,8 @@ class RelayPage : public BaseBoatPage {
 private:
     unsigned long _lastRefreshTime = 0;
     bool _buttonOn[ConfigRelayCount] = { false, false, false, false, false, false, false, false };
-    byte _buttonImage[ConfigRelayCount] = { ImageButtonColorGrey, ImageButtonColorGrey, ImageButtonColorGrey, ImageButtonColorGrey, 
-        ImageButtonColorGrey, ImageButtonColorGrey, ImageButtonColorGrey, ImageButtonColorGrey };
-    const byte _buttonImageOn[ConfigRelayCount] = { ImageButtonColorBlue, ImageButtonColorBlue, ImageButtonColorBlue, ImageButtonColorBlue, 
-        ImageButtonColorBlue, ImageButtonColorBlue, ImageButtonColorBlue, ImageButtonColorBlue };
+    byte _buttonImage[ConfigRelayCount] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+    byte _buttonImageOn[ConfigRelayCount] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
     uint8_t _slotToRelay[ConfigRelayCount] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 

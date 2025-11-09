@@ -2,10 +2,10 @@
 #include <NextionControl.h>
 
 // Nextion Names/Ids on Warning Page
-const uint8_t ButtonPrevious = 2;
-const uint8_t ButtonNext = 3;
-const char WarningListComponentName[] = "t1";
-const char WarningHeader[] = "t2";
+constexpr uint8_t ButtonPrevious = 2;
+constexpr uint8_t ButtonNext = 3;
+constexpr char WarningListComponentName[] = "t1";
+constexpr char WarningHeader[] = "t2";
 
 
 WarningPage::WarningPage(Stream* serialPort,

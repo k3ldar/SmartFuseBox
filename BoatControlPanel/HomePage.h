@@ -30,6 +30,7 @@ private:
     void updateBearing();
     void updateSpeed();
     void updateDirection();
+    void updateAllDisplayItems();
 
 protected:
     // Required overrides

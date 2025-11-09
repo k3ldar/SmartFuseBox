@@ -16,6 +16,7 @@ constexpr uint8_t Button3 = 3; // b3
 constexpr uint8_t Button4 = 4; // b4
 constexpr uint8_t ButtonNext = 12;
 constexpr uint8_t ButtonWarning = 13;
+constexpr uint8_t ButtonIdOffset = 1; // Offset to map button IDs to array indices
 
 constexpr unsigned long RefreshIntervalMs = 10000;
 
@@ -54,10 +55,13 @@ void HomePage::onEnterPage()
     // Request relay states to update button states
     getCommandMgrLink()->sendCommand("R2", "");
     _lastRefreshTime = millis();
+
+    updateAllDisplayItems();
 }
 
 void HomePage::refresh(unsigned long now)
 {
+    updateAllDisplayItems();
     // Send R2 command every 10 seconds to refresh relay states
     if (now - _lastRefreshTime >= RefreshIntervalMs)
     {
@@ -65,11 +69,6 @@ void HomePage::refresh(unsigned long now)
         _lastRefreshTime = now;
         getCommandMgrLink()->sendCommand("R2", "");
     }
-
-    updateTemperature();
-    updateHumidity();
-    updateBearing();
-    updateSpeed();
     
     // Update warning display
     WarningManager* warningMgr = getWarningManager();
@@ -93,6 +92,15 @@ void HomePage::refresh(unsigned long now)
     }
 }
 
+void HomePage::updateAllDisplayItems()
+{
+    updateTemperature();
+    updateHumidity();
+    updateBearing();
+    updateSpeed();
+	updateDirection();
+}
+
 // Handle touch events for buttons
 void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 {
@@ -101,19 +109,10 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
     switch (compId)
     {
         case Button1:
-            buttonIndex = 0;
-            break;
-
         case Button2:
-            buttonIndex = 1;
-            break;
-
         case Button3:
-            buttonIndex = 2;
-            break;
-
         case Button4:
-            buttonIndex = 3;
+            buttonIndex = compId - ButtonIdOffset;
             break;
 
         case ButtonNext: 
@@ -275,7 +274,7 @@ void HomePage::setHumidity(float humPerc)
 
 void HomePage::setBearing(float dir)
 {
-    if (_lastBearing != dir)
+    if (isnan(_lastBearing) || _lastBearing != dir)
     {
         _lastBearing = dir;
         updateBearing();
@@ -293,7 +292,7 @@ void HomePage::setSpeed(float speedKn)
 
 void HomePage::setDirection(String dir)
 {
-    if (_lastDirection != dir)
+    if (_lastDirection == "" || _lastDirection != dir)
     {
         _lastDirection = dir;
         updateDirection();
@@ -356,6 +355,7 @@ void HomePage::updateBearing()
     char buffer[10];
     snprintf(buffer, sizeof(buffer), "%d°", (int)_lastBearing);
     sendText(ControlBearingText, buffer);
+	Serial.println("Updated bearing to " + String(buffer));
 }
 
 void HomePage::updateSpeed()

@@ -23,10 +23,10 @@
 #define LINK_SERIAL Serial2
 
 
-const unsigned long UpdateIntervalMs = 600;
-const unsigned long SerialInitTimeoutMs = 300;
-const unsigned long HeartbeatIntervalMs = 1000;
-const unsigned long HeartbeatTimeoutMs = 3000;
+constexpr unsigned long UpdateIntervalMs = 600;
+constexpr unsigned long SerialInitTimeoutMs = 300;
+constexpr unsigned long HeartbeatIntervalMs = 1000;
+constexpr unsigned long HeartbeatTimeoutMs = 3000;
 
 // forward declares
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection = false);
@@ -63,6 +63,7 @@ AckCommandHandler ackHandler(&commandMgrComputer, &nextion, &warningManager);
 
 // Timers
 unsigned long lastUpdate = 0;
+uint8_t speed = 0;
 
 void setup()
 {
@@ -70,7 +71,7 @@ void setup()
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
-    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler, &warningCommandHandler };
+    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler, &sensorCommandHandler, &warningCommandHandler };
     size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
     commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 
@@ -89,6 +90,7 @@ void setup()
     Config* config = ConfigManager::getPtr();
     homePage.configSet(config);
     warningPage.configSet(config);
+	relayPage.configSet(config);
 
     nextion.begin();
 
@@ -122,11 +124,21 @@ void loop()
             // Only update HomePage if it's the currently active page
             if (nextion.getCurrentPage() == &homePage)
             {
+                if (speed > 40)
+                    speed = 0;
+                else
+					speed += 2;
+
                 homePage.setBearing(compass.getHeading());
                 homePage.setDirection(compass.getDirection());
-                homePage.setSpeed(21);
+                homePage.setSpeed(speed);
                 homePage.setCompassTemperature(compass.getTemperature());
             }
+            else
+            {
+				commandMgrComputer.sendDebug(F("Home page is not current page, skipping compass update"), F("loop"));
+            }
+
         }
     }
 }
