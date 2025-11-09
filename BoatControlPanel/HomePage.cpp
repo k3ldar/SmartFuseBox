@@ -2,22 +2,22 @@
 
 
 // Nextion Names/Ids on current Home Page
-const float CompassTemperatureWarningValue = 35;
-const char ControlHumidity[] = "t3";
-const char ControlTemperature[] = "t2";
-const char ControlBearingText[] = "t6";
-const char ControlBearingDirection[] = "t4";
-const char ControlSpeed[] = "t5";
-const char ControlBoatName[] = "t0";
-const char ControlWarning[] = "p2";
-const uint8_t Button1 = 1; // b1
-const uint8_t Button2 = 2; // b2
-const uint8_t Button3 = 3; // b3
-const uint8_t Button4 = 4; // b4
-const uint8_t ButtonNext = 12;
-const uint8_t ButtonWarning = 13;
+constexpr float CompassTemperatureWarningValue = 35;
+constexpr char ControlHumidity[] = "t3";
+constexpr char ControlTemperature[] = "t2";
+constexpr char ControlBearingText[] = "t6";
+constexpr char ControlBearingDirection[] = "t4";
+constexpr char ControlSpeed[] = "t5";
+constexpr char ControlBoatName[] = "t0";
+constexpr char ControlWarning[] = "p2";
+constexpr uint8_t Button1 = 1; // b1
+constexpr uint8_t Button2 = 2; // b2
+constexpr uint8_t Button3 = 3; // b3
+constexpr uint8_t Button4 = 4; // b4
+constexpr uint8_t ButtonNext = 12;
+constexpr uint8_t ButtonWarning = 13;
 
-const unsigned long RefreshIntervalMs = 10000;
+constexpr unsigned long RefreshIntervalMs = 10000;
 
 
 HomePage::HomePage(Stream* serialPort,
@@ -37,10 +37,10 @@ void HomePage::begin()
         configUpdated();
     }
     
-    setPicture("b1", IMG_BTN_COLOR_GREY); 
-    setPicture("b2", IMG_BTN_COLOR_GREY); 
-    setPicture("b3", IMG_BTN_COLOR_GREY); 
-    setPicture("b4", IMG_BTN_COLOR_GREY); 
+    setPicture("b1", ImageButtonColorGrey); 
+    setPicture("b2", ImageButtonColorGrey); 
+    setPicture("b3", ImageButtonColorGrey); 
+    setPicture("b4", ImageButtonColorGrey); 
     _compassTempAboveNorm = 0;
 }
 
@@ -77,11 +77,11 @@ void HomePage::refresh(unsigned long now)
     {
         if (warningMgr->hasWarnings())
         {
-            setPicture(ControlWarning, IMG_WARNING);
+            setPicture(ControlWarning, ImageWarning);
         }
         else
         {
-            setPicture(ControlWarning, IMG_BLANK);
+            setPicture(ControlWarning, ImageBlank);
         }
         
         // Update connection-related displays
@@ -97,7 +97,7 @@ void HomePage::refresh(unsigned long now)
 void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 {
     // Map component ID to button index
-    int buttonIndex = -1;
+    uint8_t buttonIndex = InvalidButtonIndex;
     switch (compId)
     {
         case Button1:
@@ -117,11 +117,11 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
             break;
 
         case ButtonNext: 
-            setPage(PAGE_WARNING);
+            setPage(PageRelay);
             return;
 
         case ButtonWarning:
-            setPage(PAGE_WARNING);
+            setPage(PageWarning);
             return;  
 
         default:
@@ -130,13 +130,13 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 
     Config* config = getConfig();
     // Check if we have a valid config and the button is mapped to a relay
-    if (!config || buttonIndex < 0 || buttonIndex >= HOME_BUTTONS)
+    if (!config || buttonIndex >= ConfigHomeButtons)
         return;
 
     uint8_t relayIndex = _slotToRelay[buttonIndex];
 
     // Check if this button slot has a valid relay mapping
-    if (relayIndex == 0xFF || relayIndex >= RELAY_COUNT)
+    if (relayIndex == 0xFF || relayIndex >= ConfigRelayCount)
         return;
 
     // Get the relay short name from config (for home page display)
@@ -162,7 +162,7 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
         _buttonOn[buttonIndex] = !_buttonOn[buttonIndex];
 
         // Get the appropriate color based on the new state
-        uint8_t newColor = getButtonColor(buttonIndex, _buttonOn[buttonIndex]);
+        uint8_t newColor = getButtonColor(buttonIndex, _buttonOn[buttonIndex], ConfigHomeButtons);
         _buttonImage[buttonIndex] = newColor;
 
         // Update the button appearance
@@ -187,6 +187,8 @@ void HomePage::handleText(String text)
 
 void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
 {
+    getCommandMgrComputer()->sendDebug("HomePage::handleExternalUpdate type=" + String(updateType), "HomePage");
+    
     // Call base class first to handle heartbeat ACKs
     BaseBoatPage::handleExternalUpdate(updateType, data);
 
@@ -195,15 +197,16 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
         const RelayStateUpdate* update = static_cast<const RelayStateUpdate*>(data);
 
         // Find if this relay is mapped to any button on this page
-        for (uint8_t buttonIndex = 0; buttonIndex < HOME_BUTTONS; ++buttonIndex)
+        for (uint8_t buttonIndex = 0; buttonIndex < ConfigHomeButtons; ++buttonIndex)
         {
             if (_slotToRelay[buttonIndex] == update->relayIndex)
             {
+                
                 // Update internal state
                 _buttonOn[buttonIndex] = update->isOn;
 
                 // Get the appropriate color for the new state
-                uint8_t newColor = getButtonColor(buttonIndex, update->isOn);
+                uint8_t newColor = getButtonColor(buttonIndex, update->isOn, ConfigHomeButtons);
                 _buttonImage[buttonIndex] = newColor;
 
                 // Update the button appearance on display
@@ -212,16 +215,8 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
                 setPicture2(buttonName, newColor);
 
                 // Log the update for debugging (using short name)
-                SerialCommandManager* commandMgrComputer = getCommandMgrComputer();
-                if (commandMgrComputer)
-                {
-                    Config* config = getConfig();
-                    String relayName = config ? String(config->relayShortNames[update->relayIndex]) : String(update->relayIndex);
-                    commandMgrComputer->sendDebug(
-                        relayName + " state updated to " + (update->isOn ? "ON" : "OFF"),
-                        "HomePage"
-                    );
-                }
+                Config* config = getConfig();
+                String relayName = config ? String(config->relayShortNames[update->relayIndex]) : String(update->relayIndex);
 
                 break; // Found the button, no need to continue
             }
@@ -392,7 +387,7 @@ void HomePage::configUpdated()
 
     // update Nextion with config details
     // Example: apply home page mapping and enabled mask to UI slots
-    for (uint8_t button = 0; button < HOME_BUTTONS; ++button)
+    for (uint8_t button = 0; button < ConfigHomeButtons; ++button)
     {
         uint8_t relayIndex = config->homePageMapping[button];
         if (relayIndex <= 7)
@@ -410,7 +405,7 @@ void HomePage::configUpdated()
         {
             _slotToRelay[button] = 0xFF;
             _buttonOn[button] = false;
-            _buttonImage[button] = IMG_BTN_COLOR_GREY;
+            _buttonImage[button] = ImageButtonColorGrey;
             setPicture("b" + String(button + 1), _buttonImage[button]);
             sendText(String("b") + String(button + 1), ""); 
         }
@@ -419,39 +414,4 @@ void HomePage::configUpdated()
     // Update the boat name
     String boatName = String(config->boatName);
     sendText(ControlBoatName, boatName);
-    
-    if (commandMgrComputer)
-    {
-        commandMgrComputer->sendDebug("Boat name set to: " + boatName, F("HomePage"));
-    }
-}
-
-uint8_t HomePage::getButtonColor(uint8_t buttonIndex, bool isOn)
-{
-    Config* config = getConfig();
-    if (!config || buttonIndex >= HOME_BUTTONS)
-    {
-        // Default: grey off, blue on
-        return isOn ? IMG_BTN_COLOR_BLUE : IMG_BTN_COLOR_GREY;
-    }
-
-    if (isOn)
-    {
-        // Check if a custom color is configured for this button
-        uint8_t configuredColor = config->homePageButtonImage[buttonIndex];
-        if (configuredColor != IMG_BTN_COLOR_DEFAULT &&
-            configuredColor >= IMG_BTN_COLOR_BLUE &&
-            configuredColor <= IMG_BTN_COLOR_YELLOW)
-        {
-            return configuredColor;
-        }
-
-        // Default ON color is blue
-        return IMG_BTN_COLOR_BLUE;
-    }
-    else
-    {
-        // OFF state always uses grey
-        return IMG_BTN_COLOR_GREY;
-    }
 }

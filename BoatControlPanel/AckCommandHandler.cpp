@@ -28,28 +28,25 @@ bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const 
     return true;
 }
 
-bool AckCommandHandler::processRelayAck(SerialCommandManager* sender, const String& key, const String& value)
-{
-
-}
-
 bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
+    sendDebugMessage("Processing ACK: " + command + " (" + String(paramCount) + " params)", "ACK");
+    
     String cmd = command;
     cmd.trim();
 
     // Validate command
     if (cmd != AckCommand)
     {
-        sendDebugMessage("Unknown ACK command " + cmd, F("AckCommandHandler"));
+        sendDebugMessage("Unknown ACK command " + cmd, "ACK");
         return false;
     }
 
-	// the first param indicates what is being acknowledged (F0=ok for heartbeat ack, R2=ok for relay command ack, etc.)
+    // the first param indicates what is being acknowledged (F0=ok for heartbeat ack, R2=ok for relay command ack, etc.)
 
     if (paramCount == 0)
     {
-        sendDebugMessage(F("No parameters in ACK command"), F("AckCommandHandler"));
+        sendDebugMessage("No parameters in ACK command", "ACK");
         return false;
 	}
 
@@ -63,22 +60,30 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
         // Heartbeat acknowledgement
         processHeartbeatAck(sender, key, val);
 	}
-    else if (key == "R2" && val.equalsIgnoreCase("ok") && paramCount == 2)
+    else if (key == "R2" && val.equalsIgnoreCase("ok"))
     {
-        if (!isAllDigits(params[1].key) || !isAllDigits(params[1].value))
+        // Relay state acknowledgement - handle both formats:
+        // 1. ACK:R2=ok (just acknowledgement, no relay state - paramCount == 1)
+        // 2. ACK:R2=ok:0=0 (acknowledgement with relay state - paramCount == 2)
+        
+        if (paramCount >= 2)
         {
-            sendDebugMessage(F("invalid parameters in relay ACK"), F("AckCommandHandler"));
-            return true;
-        }
+            // Format: ACK:R2=ok:0=0 (with relay index and state)
+            if (!isAllDigits(params[1].key) || !isAllDigits(params[1].value))
+            {
+                return true;
+            }
 
-		uint8_t relayIndex = params[1].key.toInt();
-		bool isOn = parseBooleanValue(params[1].value);
-        RelayStateUpdate update = { relayIndex, isOn };
-        notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
+            uint8_t relayIndex = params[1].key.toInt();
+            bool isOn = parseBooleanValue(params[1].value);
+            
+            RelayStateUpdate update = { relayIndex, isOn };
+            notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
+        }
     }
 	else
     {
-		sendDebugMessage(F("Unknown or invalid ACK command"), F("AckCommandHandler"));
+		sendDebugMessage("Unknown or invalid ACK: key='" + key + "', val='" + val + "'", "ACK");
     }
 
     return true;

@@ -10,7 +10,7 @@
 
 #include "HomePage.h"
 #include "WarningPage.h"
-#include "ButtonsPage.h"
+#include "RelayPage.h"
 
 #include "Config.h"
 #include "ConfigManager.h"
@@ -46,7 +46,8 @@ WarningManager warningManager(&commandMgrLink, HeartbeatIntervalMs, HeartbeatTim
 // Nextion display setup
 HomePage homePage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
 WarningPage warningPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
-BaseDisplayPage* pages[] = { &homePage, &warningPage };
+RelayPage relayPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+BaseDisplayPage* pages[] = { &homePage, &warningPage, &relayPage };
 NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
 
 // link command handlers
@@ -77,10 +78,7 @@ void setup()
     InitializeSerial(NEXTION_SERIAL, 19200);
     InitializeSerial(LINK_SERIAL, 9600, false);
 
-    commandMgrComputer.sendCommand(F("INIT"), F("Initializing Boat Control Panel"));
-
     // retrieve config settings
-
     ConfigManager::begin();
 
     if (!ConfigManager::load())
@@ -92,15 +90,17 @@ void setup()
     homePage.configSet(config);
     warningPage.configSet(config);
 
+    nextion.begin();
+
     if (!compass.begin())
     {
         warningManager.raiseWarning(WarningType::SensorFailure);
         warningManager.raiseWarning(WarningType::CompassFailure);
     }
 
-    nextion.begin();
     commandMgrComputer.sendCommand(F("F1"), "");
     commandMgrLink.sendCommand(F("F1"), "");
+	nextion.sendCommand(F("page 1"));
 }
 
 void loop()

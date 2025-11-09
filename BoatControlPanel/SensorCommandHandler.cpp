@@ -41,8 +41,8 @@ bool SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     else if (cmd == SensorDirection)
     {
         CharStateUpdate update = {};
-        update.length = min(val.length(), (unsigned int)(CharStateUpdate::MAX_LENGTH - 1));
-        val.toCharArray(update.value, CharStateUpdate::MAX_LENGTH);
+        update.length = min(val.length(), (unsigned int)(CharStateUpdate::MaxLength - 1));
+        val.toCharArray(update.value, CharStateUpdate::MaxLength);
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::Direction), &update);
     }
     else if (cmd == SensorSpeed)

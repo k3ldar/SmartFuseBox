@@ -137,11 +137,11 @@ void WarningPage::handleTouch(uint8_t compId, uint8_t eventType)
     switch (compId)
     {
     case ButtonPrevious:
-        setPage(PAGE_HOME);
+        setPage(PageHome);
         break;
 
     case ButtonNext:
-        setPage(PAGE_HOME);
+        setPage(PageRelay);
         break;
     }
 }

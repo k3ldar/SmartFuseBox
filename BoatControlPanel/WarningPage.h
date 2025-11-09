@@ -26,5 +26,5 @@ public:
     void handleTouch(uint8_t compId, uint8_t eventType) override;
     void handleExternalUpdate(uint8_t updateType, const void* data) override;
     
-    uint8_t getPageId() const override { return PAGE_WARNING; }
+    uint8_t getPageId() const override { return PageWarning; }
 };
