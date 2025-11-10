@@ -18,7 +18,7 @@ public:
     static void resetToDefaults();
 
     // Access current in-memory config
-    static Config* getPtr();
+    static Config* getConfigPtr();
 
     // For debug or UI: how many bytes of EEPROM are available
     static size_t availableEEPROMBytes();

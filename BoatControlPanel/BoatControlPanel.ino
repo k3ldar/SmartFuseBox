@@ -2,11 +2,14 @@
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
 
+#include "BoatControlPanelConstants.h"
+
 #include "InterceptDebugCommandHandler.h"
 #include "AckCommandHandler.h"
 #include "ConfigCommandHandler.h"
 #include "SensorCommandHandler.h"
 #include "WarningCommandHandler.h"
+#include "SystemCommandHandler.h"
 
 #include "HomePage.h"
 #include "WarningPage.h"
@@ -60,6 +63,7 @@ ConfigCommandHandler configHandler(&homePage);
 
 // shared command handlers
 AckCommandHandler ackHandler(&commandMgrComputer, &nextion, &warningManager);
+SystemCommandHandler systemCommandHandler(&commandMgrComputer, &commandMgrLink);
 
 // Timers
 unsigned long lastUpdate = 0;
@@ -67,11 +71,13 @@ uint8_t speed = 0;
 
 void setup()
 {
-    ISerialCommandHandler* linkHandlers[] = { &interceptDebugHandler, &ackHandler, &sensorCommandHandler, &warningCommandHandler };
+    ISerialCommandHandler* linkHandlers[] = { &interceptDebugHandler, &ackHandler, &sensorCommandHandler, 
+        &warningCommandHandler, &systemCommandHandler };
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
-    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler, &sensorCommandHandler, &warningCommandHandler };
+    ISerialCommandHandler* computerHandlers[] = { &configHandler, &ackHandler, &sensorCommandHandler, 
+        &warningCommandHandler, &systemCommandHandler };
     size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
     commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 
@@ -87,7 +93,7 @@ void setup()
         warningManager.raiseWarning(WarningType::DefaultConfiguration);
     }
 
-    Config* config = ConfigManager::getPtr();
+    Config* config = ConfigManager::getConfigPtr();
     homePage.configSet(config);
     warningPage.configSet(config);
 	relayPage.configSet(config);
@@ -100,9 +106,9 @@ void setup()
         warningManager.raiseWarning(WarningType::CompassFailure);
     }
 
-    commandMgrComputer.sendCommand(F("F1"), "");
-    commandMgrLink.sendCommand(F("F1"), "");
-	nextion.sendCommand(F("page 1"));
+    commandMgrComputer.sendCommand(SystemInitialized, "");
+    commandMgrLink.sendCommand(SystemInitialized, "");
+	nextion.sendCommand(PageOne);
 }
 
 void loop()
@@ -134,11 +140,6 @@ void loop()
                 homePage.setSpeed(speed);
                 homePage.setCompassTemperature(compass.getTemperature());
             }
-            else
-            {
-				commandMgrComputer.sendDebug(F("Home page is not current page, skipping compass update"), F("loop"));
-            }
-
         }
     }
 }

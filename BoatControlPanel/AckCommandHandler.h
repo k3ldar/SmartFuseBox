@@ -3,8 +3,7 @@
 #include "HomePage.h"
 #include "BaseBoatCommandHandler.h"
 #include "ConfigManager.h"
-
-const char AckCommand[] = "ACK";
+#include "BoatControlPanelConstants.h"
 
 class AckCommandHandler : public BaseBoatCommandHandler
 {

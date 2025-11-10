@@ -7,6 +7,8 @@
 #include "Config.h"
 #include "BaseBoatPage.h"
 #include "NextionIds.h"
+#include "BoatControlPanelConstants.h"
+
 
 class RelayPage : public BaseBoatPage {
 private:

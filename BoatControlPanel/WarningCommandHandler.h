@@ -5,12 +5,6 @@
 #include "BaseBoatCommandHandler.h"
 #include "ConfigManager.h"
 
-const char WarningsActive[] = "W0";
-const char WarningsList[] = "W1";
-const char WarningStatus[] = "W2";
-const char WarningsClear[] = "W3";
-const char WarningsAdd[] = "W4";
-
 class WarningCommandHandler : public BaseBoatCommandHandler
 {
 private:

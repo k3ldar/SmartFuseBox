@@ -87,6 +87,7 @@
     </ClCompile>
     <ClCompile Include="AckCommandHandler.cpp" />
     <ClCompile Include="SensorCommandHandler.cpp" />
+    <ClCompile Include="SystemCommandHandler.cpp" />
     <ClCompile Include="TLVCompass.cpp">
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
@@ -106,6 +107,7 @@
     </ClCompile>
     <ClInclude Include="BaseBoatCommandHandler.h" />
     <ClInclude Include="BaseBoatPage.h" />
+    <ClInclude Include="BoatControlPanelConstants.h" />
     <ClInclude Include="NextionIds.h" />
     <ClInclude Include="RelayPage.h" />
     <ClInclude Include="Config.h" />
@@ -114,6 +116,7 @@
     <ClInclude Include="AckCommandHandler.h" />
     <ClInclude Include="InterceptDebugCommandHandler.h" />
     <ClInclude Include="SensorCommandHandler.h" />
+    <ClInclude Include="SystemCommandHandler.h" />
     <ClInclude Include="WarningCommandHandler.h" />
     <ClInclude Include="WarningManager.h" />
     <ClInclude Include="WarningPage.h" />

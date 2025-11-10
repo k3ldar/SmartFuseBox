@@ -79,7 +79,7 @@ void WarningManager::sendHeartbeat()
 {
     if (_commandMgr)
     {
-        _commandMgr->sendCommand("F0", "");
+        _commandMgr->sendCommand(SystemHeartbeatCommand, "");
     }
 }
 

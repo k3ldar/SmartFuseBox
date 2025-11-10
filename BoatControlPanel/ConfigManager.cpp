@@ -1,6 +1,9 @@
 #include "ConfigManager.h"
 #include <EEPROM.h>
 
+constexpr char DefaultBoatName[] = "My Boat";
+constexpr char RelayNameShort[] = "R %u";
+constexpr char RelayNameLong[] = "Relay %u";
 // Static storage (use the shared Config from Config.h)
 Config ConfigManager::_cfg;
 
@@ -73,20 +76,20 @@ void ConfigManager::resetToDefaults()
     _cfg.version = ConfigVersion;
 
     // Default boat name
-    strncpy(_cfg.boatName, "My Boat", ConfigMaxBoatNameLength);
+    strncpy(_cfg.boatName, DefaultBoatName, ConfigMaxBoatNameLength);
 
     // Default relay names (both short and long)
     for (uint8_t i = 0; i < ConfigRelayCount; ++i)
     {
         // Default short name: "R0", "R1", etc.
         char shortBuf[ConfigShortRelayName]{ 0 };
-        snprintf(shortBuf, sizeof(shortBuf), "R%u", (unsigned)i);
+        snprintf(shortBuf, sizeof(shortBuf), RelayNameShort, (unsigned)i);
         strncpy(_cfg.relayShortNames[i], shortBuf, ConfigShortRelayName - 1);
         _cfg.relayShortNames[i][ConfigShortRelayName - 1] = '\0';
 
         // Default long name: "Relay 0", "Relay 1", etc.
         char longBuf[ConfigLongRelayName]{ 0 };
-        snprintf(longBuf, sizeof(longBuf), "Relay %u", (unsigned)i);
+        snprintf(longBuf, sizeof(longBuf), RelayNameLong, (unsigned)i);
         strncpy(_cfg.relayLongNames[i], longBuf, ConfigLongRelayName - 1);
         _cfg.relayLongNames[i][ConfigLongRelayName - 1] = '\0';
     }
@@ -103,12 +106,14 @@ void ConfigManager::resetToDefaults()
         _cfg.buttonImage[i] = ImageButtonColorBlue; // default color
     }
 
+	_cfg.vesselType = VesselType::Motor;
+
     // compute checksum
     _cfg.checksum = 0;
     _cfg.checksum = calcChecksum(_cfg);
 }
 
-Config* ConfigManager::getPtr()
+Config* ConfigManager::getConfigPtr()
 {
     return &_cfg;
 }

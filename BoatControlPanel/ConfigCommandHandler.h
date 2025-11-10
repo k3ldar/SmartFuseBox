@@ -5,15 +5,6 @@
 #include "HomePage.h"
 #include "BaseCommandHandler.h"
 
-const char ConfigSaveSettings[] = "C0";
-const char ConfigGetSettings[] = "C1";
-const char ConfigResetSettings[] = "C2";
-const char ConfigRenameBoat[] = "C3";
-const char ConfigRenameRelay[] = "C4";
-const char ConfigMapHomeButton[] = "C5";
-const char ConfigSetButtonColor[] = "C6";
-
-
 class ConfigCommandHandler : public BaseCommandHandler
 {
 public:
