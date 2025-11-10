@@ -67,11 +67,13 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             {
                 // fallback if they sent single token e.g. "RNAME 2" (no name) -> error
                 sendAckErr(sender, cmd, F("Missing name"), &params[0]);
+                return true;
             }
 
-            if (idx < 0 || idx >= ConfigRelayCount)
+            if (idx >= ConfigRelayCount)
             {
                 sendAckErr(sender, cmd, F("Index out of range"), &params[0]);
+                return true;
             }
 
             // Parse short and long names (format: "shortName|longName" or just "shortName")
