@@ -46,9 +46,6 @@
     <ClCompile Include="ConfigManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WarningPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WarningManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,6 +76,18 @@
     <ClCompile Include="TLVCompass.h">
       <Filter>Header Files\Sensors</Filter>
     </ClCompile>
+    <ClCompile Include="WarningCommandHandler.cpp">
+      <Filter>Source Files\CommandHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="RelayPage.cpp">
+      <Filter>Source Files\Pages</Filter>
+    </ClCompile>
+    <ClCompile Include="WarningPage.cpp">
+      <Filter>Source Files\Pages</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemCommandHandler.cpp">
+      <Filter>Source Files\CommandHandlers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.BoatControlPanel.vsarduino.h">
@@ -102,23 +111,29 @@
     <ClInclude Include="SensorCommandHandler.h">
       <Filter>Header Files\CommandHandlers</Filter>
     </ClInclude>
-    <ClInclude Include="BoatControlPanel\BaseBoatPage.h">
-      <Filter>Header Files\Pages</Filter>
-    </ClInclude>
     <ClInclude Include="WarningPage.h">
       <Filter>Header Files\Pages</Filter>
     </ClInclude>
     <ClInclude Include="BaseBoatCommandHandler.h">
       <Filter>Header Files\CommandHandlers</Filter>
     </ClInclude>
-    <ClInclude Include="InterceptDebugHandler.h">
+    <ClInclude Include="NextionIds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WarningCommandHandler.h">
       <Filter>Header Files\CommandHandlers</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Commands.md" />
-    <None Include="docs\ExternalUpdatePattern.md" />
-    <None Include="HEARTBEAT_IMPLEMENTATION.md" />
-    <None Include="WARNING_SYSTEM_GUIDE.md" />
+    <ClInclude Include="InterceptDebugCommandHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="RelayPage.h">
+      <Filter>Header Files\Pages</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseBoatPage.h">
+      <Filter>Header Files\Pages</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemCommandHandler.h">
+      <Filter>Header Files\CommandHandlers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

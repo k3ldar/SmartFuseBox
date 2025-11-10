@@ -25,8 +25,8 @@ RelayPage::RelayPage(Stream* serialPort,
 {
     for (uint8_t i = 0; i < ConfigRelayCount; ++i)
     {
-		_buttonImage[i] = ImageButtonColorGrey + ImageButtonColorOffset;
-		_buttonImageOn[i] = ImageButtonColorBlue + ImageButtonColorOffset;
+        _buttonImage[i] = ImageButtonColorGrey + ImageButtonColorOffset;
+        _buttonImageOn[i] = ImageButtonColorBlue + ImageButtonColorOffset;
 	}
 }
 
@@ -133,25 +133,16 @@ void RelayPage::handleTouch(uint8_t compId, uint8_t eventType)
         {
             commandMgrComputer->sendDebug(relayName + String(F(" released")), F("RelayPage"));
         }
-
         // Toggle button state
         _buttonOn[buttonIndex] = !_buttonOn[buttonIndex];
 
-        // Get the appropriate color based on the new state
-        uint8_t newColor = getButtonColor(buttonIndex, _buttonOn[buttonIndex], ConfigRelayCount);
-        newColor += ImageButtonColorOffset;
-        _buttonImage[buttonIndex] = newColor;
-
-        // Update the button appearance
-        setPicture("b" + String(buttonIndex), newColor);
-        setPicture2("b" + String(buttonIndex), newColor);
-
         // Send relay command
-        String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? "=1" : "=0");
         SerialCommandManager* commandMgrLink = getCommandMgrLink();
         if (commandMgrLink)
         {
-            commandMgrLink->sendCommand("R3", cmd);
+            StringKeyValue param = { String(relayIndex), _buttonOn[buttonIndex] ? "1" : "0" };
+            commandMgrLink->sendCommand("R3", "", "", &param, 1);
+			commandMgrLink->sendCommand("R4", "", "", &param, 1);
         }
     }
 }
@@ -176,7 +167,7 @@ void RelayPage::handleExternalUpdate(uint8_t updateType, const void* data)
 
                 // Get the appropriate color for the new state
                 uint8_t newColor = getButtonColor(buttonIndex, update->isOn, ConfigRelayCount);
-				newColor += ImageButtonColorOffset;
+                newColor += ImageButtonColorOffset;
                 _buttonImage[buttonIndex] = newColor;
 
                 // Update the button appearance on display

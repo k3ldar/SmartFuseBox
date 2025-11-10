@@ -103,12 +103,14 @@ void ConfigManager::resetToDefaults()
         _cfg.buttonImage[i] = ImageButtonColorBlue; // default color
     }
 
+	_cfg.vesselType = VesselType::Motor;
+
     // compute checksum
     _cfg.checksum = 0;
     _cfg.checksum = calcChecksum(_cfg);
 }
 
-Config* ConfigManager::getPtr()
+Config* ConfigManager::getConfigPtr()
 {
     return &_cfg;
 }

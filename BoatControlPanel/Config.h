@@ -2,6 +2,12 @@
 #include <Arduino.h>
 #include <stdint.h>
 
+enum class VesselType : uint8_t {
+    Motor = 0x00,                   // Power boat
+    Sail = 0x01,                    // Sailing boat
+    Fishing = 0x02,                 // Fishing boat
+    Yacht = 0x03,                   // Yacht
+};
 
 //
 // Layout:
@@ -29,5 +35,6 @@ struct Config {
     char relayLongNames[ConfigRelayCount][ConfigLongRelayName];
     uint8_t homePageMapping[ConfigHomeButtons]; // 0..7 or 0xFF = empty
     uint8_t buttonImage[ConfigRelayCount]; // 0..7 or 0xFF = empty
+    VesselType vesselType;
     uint16_t checksum;
 } __attribute__((packed));

@@ -8,7 +8,7 @@ ConfigCommandHandler::ConfigCommandHandler(HomePage* homePage)
 bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
     // Access the in-memory config
-    Config* cfg = ConfigManager::getPtr();
+    Config* cfg = ConfigManager::getConfigPtr();
     if (!cfg)
     {
         sendAckErr(sender, command, "Config not available");

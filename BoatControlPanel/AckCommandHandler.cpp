@@ -81,6 +81,14 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
             notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
         }
     }
+    else if (key == "R4" && val.equalsIgnoreCase("ok"))
+    {
+        uint8_t relayIndex = params[1].key.toInt();
+        bool isOn = parseBooleanValue(params[1].value);
+
+        RelayStateUpdate update = { relayIndex, isOn };
+        notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
+    }
 	else
     {
 		sendDebugMessage("Unknown or invalid ACK: key='" + key + "', val='" + val + "'", "ACK");
