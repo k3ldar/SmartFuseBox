@@ -173,7 +173,7 @@ void RelayPage::handleExternalUpdate(uint8_t updateType, const void* data)
                 _buttonImage[buttonIndex] = newColor;
 
                 // Update the button appearance on display
-                String buttonName = ButtonPrefix + String(buttonIndex);
+                String buttonName = ButtonPrefix + String(buttonIndex + 1);
                 setPicture(buttonName, newColor);
                 setPicture2(buttonName, newColor);
 
