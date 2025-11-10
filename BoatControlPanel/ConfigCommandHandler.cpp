@@ -53,6 +53,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         else
         {
             sendAckErr(sender, cmd, F("Missing param"));
+            return true;
         }
     }
     else if (cmd == ConfigRenameRelay)
