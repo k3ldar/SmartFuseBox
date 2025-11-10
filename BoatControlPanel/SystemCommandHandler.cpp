@@ -1,6 +1,3 @@
-// 
-// 
-// 
 
 #include "SystemCommandHandler.h"
 
@@ -17,7 +14,7 @@ SystemCommandHandler::~SystemCommandHandler()
 
 const String* SystemCommandHandler::supportedCommands(size_t& count) const
 {
-    static const String cmds[] = { HeartbeatCommand, SystemInitialized, FreeMemory };
+    static const String cmds[] = { SystemHeartbeatCommand, SystemInitialized, SystemFreeMemory };
     count = sizeof(cmds) / sizeof(cmds[0]);
     return cmds;
 }
@@ -27,7 +24,7 @@ bool SystemCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     String cmd = command;
     cmd.trim();
 
-    if (cmd == HeartbeatCommand)
+    if (cmd == SystemHeartbeatCommand)
     {
         sendAckOk(sender, cmd);
     }
@@ -35,15 +32,15 @@ bool SystemCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     {
         sendAckOk(sender, cmd);
     }
-    else if (cmd == FreeMemory)
+    else if (cmd == SystemFreeMemory)
     {
         // Example: return a dummy free memory value
-        StringKeyValue param = { "mem", String(freeRam()) };
+        StringKeyValue param = { ValueParamName, String(freeRam()) };
         sendAckOk(sender, cmd, &param);
     }
     else
     {
-        sendAckErr(sender, cmd, "Unknown system command");
+        sendAckErr(sender, cmd, F("Unknown system command"));
     }
 
     return true;

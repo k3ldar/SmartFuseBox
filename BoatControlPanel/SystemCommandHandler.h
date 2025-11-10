@@ -1,9 +1,6 @@
 #pragma once
 #include "BaseCommandHandler.h"
-
-constexpr char HeartbeatCommand[] = "F0";
-constexpr char SystemInitialized[] = "F1";
-constexpr char FreeMemory[] = "F2";
+#include "BoatControlPanelConstants.h"
 
 // internal message handlers
 class SystemCommandHandler : public BaseCommandHandler

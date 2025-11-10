@@ -1,5 +1,7 @@
 #include "AckCommandHandler.h"
 
+const char AckCommand[] = "ACK";
+
 AckCommandHandler::AckCommandHandler(SerialCommandManager* computerCommandManager, NextionControl* nextionControl, WarningManager* warningManager)
     : BaseBoatCommandHandler(computerCommandManager, nextionControl, warningManager)
 {
@@ -8,7 +10,7 @@ AckCommandHandler::AckCommandHandler(SerialCommandManager* computerCommandManage
 bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const String& key, const String& value)
 {
     // Check for heartbeat acknowledgement (F0=ok)
-    if (key != "F0" || !value.equalsIgnoreCase("ok"))
+    if (key != SystemHeartbeatCommand || !value.equalsIgnoreCase(AckSuccess))
         return false;
 
     if (_warningManager)
@@ -22,7 +24,7 @@ bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const 
 
     if (sender)
     {
-        sender->sendDebug("Heartbeat ACK received", "ACK");
+        sender->sendDebug(F("Heartbeat ACK received"), AckCommand);
     }
 
     return true;
@@ -30,7 +32,7 @@ bool AckCommandHandler::processHeartbeatAck(SerialCommandManager* sender, const 
 
 bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
-    sendDebugMessage("Processing ACK: " + command + " (" + String(paramCount) + " params)", "ACK");
+    sendDebugMessage("Processing ACK: " + command + " (" + String(paramCount) + " params)", AckCommand);
     
     String cmd = command;
     cmd.trim();
@@ -38,7 +40,7 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
     // Validate command
     if (cmd != AckCommand)
     {
-        sendDebugMessage("Unknown ACK command " + cmd, "ACK");
+        sendDebugMessage("Unknown ACK command " + cmd, AckCommand);
         return false;
     }
 
@@ -46,7 +48,7 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
 
     if (paramCount == 0)
     {
-        sendDebugMessage("No parameters in ACK command", "ACK");
+        sendDebugMessage(F("No parameters in ACK command"), AckCommand);
         return false;
 	}
 
@@ -55,12 +57,12 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
 	String val = params[0].value;
 	val.trim();
 
-    if (key == "F0" && val.equalsIgnoreCase("ok"))
+    if (key == SystemHeartbeatCommand && val.equalsIgnoreCase(AckSuccess))
     {
         // Heartbeat acknowledgement
         processHeartbeatAck(sender, key, val);
 	}
-    else if (key == "R2" && val.equalsIgnoreCase("ok"))
+    else if (key == RelayRetrieveStates && val.equalsIgnoreCase(AckSuccess))
     {
         // Relay state acknowledgement - handle both formats:
         // 1. ACK:R2=ok (just acknowledgement, no relay state - paramCount == 1)
@@ -81,17 +83,24 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
             notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
         }
     }
-    else if (key == "R4" && val.equalsIgnoreCase("ok"))
+    else if (key == RelayStatusGet && val.equalsIgnoreCase(AckSuccess))
     {
-        uint8_t relayIndex = params[1].key.toInt();
-        bool isOn = parseBooleanValue(params[1].value);
+        if (paramCount == 1)
+        {
+            uint8_t relayIndex = params[1].key.toInt();
+            bool isOn = parseBooleanValue(params[1].value);
 
-        RelayStateUpdate update = { relayIndex, isOn };
-        notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
+            RelayStateUpdate update = { relayIndex, isOn };
+            notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::RelayState), &update);
+        }
+        else
+        {
+			sendDebugMessage("Invalid R4 ACK format: paramCount=" + String(paramCount), AckCommand);
+        }
     }
 	else
     {
-		sendDebugMessage("Unknown or invalid ACK: key='" + key + "', val='" + val + "'", "ACK");
+		sendDebugMessage("Unknown or invalid ACK: key='" + key + "', val='" + val + "'", AckCommand);
     }
 
     return true;

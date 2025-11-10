@@ -10,6 +10,15 @@ constexpr char ControlBearingDirection[] = "t4";
 constexpr char ControlSpeed[] = "t5";
 constexpr char ControlBoatName[] = "t0";
 constexpr char ControlWarning[] = "p2";
+constexpr char NoValueText[] = "--";
+constexpr char SpeedUnitKnots[] = "%d kn";
+constexpr char BearingFormat[] = "%d°";
+constexpr char PercentSuffix[] = "%";
+constexpr char CelciusSuffix[] = "C";
+constexpr char ButtonOn[] = "=1";
+constexpr char ButtonOff[] = "=0";
+
+
 constexpr uint8_t Button1 = 1; // b1
 constexpr uint8_t Button2 = 2; // b2
 constexpr uint8_t Button3 = 3; // b3
@@ -37,11 +46,11 @@ void HomePage::begin()
     {
         configUpdated();
     }
-    
-    setPicture("b1", ImageButtonColorGrey); 
-    setPicture("b2", ImageButtonColorGrey); 
-    setPicture("b3", ImageButtonColorGrey); 
-    setPicture("b4", ImageButtonColorGrey); 
+
+    for (uint8_t i = 1; i <= ConfigHomeButtons; ++i)
+    {
+        setPicture(ButtonPrefix + String(i), ImageButtonColorGrey);
+	}
     _compassTempAboveNorm = 0;
 }
 
@@ -53,7 +62,7 @@ void HomePage::onEnterPage()
     }
     
     // Request relay states to update button states
-    getCommandMgrLink()->sendCommand("R2", "");
+    getCommandMgrLink()->sendCommand(RelayRetrieveStates, "");
     _lastRefreshTime = millis();
 
     updateAllDisplayItems();
@@ -67,7 +76,7 @@ void HomePage::refresh(unsigned long now)
     {
         getCommandMgrComputer()->sendDebug(F("Sending R2"), F("HomePage"));
         _lastRefreshTime = now;
-        getCommandMgrLink()->sendCommand("R2", "");
+        getCommandMgrLink()->sendCommand(RelayRetrieveStates, "");
     }
     
     // Update warning display
@@ -86,8 +95,8 @@ void HomePage::refresh(unsigned long now)
         // Update connection-related displays
         if (warningMgr->isWarningActive(WarningType::ConnectionLost))
         {
-            sendText(ControlHumidity, "--");
-            sendText(ControlTemperature, "--");
+            sendText(ControlHumidity, NoValueText);
+            sendText(ControlTemperature, NoValueText);
         }
     }
 }
@@ -165,15 +174,15 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
         _buttonImage[buttonIndex] = newColor;
 
         // Update the button appearance
-        setPicture("b" + String(buttonIndex + 1), newColor);
-        setPicture2("b" + String(buttonIndex + 1), newColor);
+        setPicture(ButtonPrefix + String(buttonIndex + 1), newColor);
+        setPicture2(ButtonPrefix + String(buttonIndex + 1), newColor);
 
         // Send relay command
-        String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? "=1" : "=0");
+        String cmd = String(relayIndex) + (_buttonOn[buttonIndex] ? ButtonOn : ButtonOff);
         SerialCommandManager* commandMgrLink = getCommandMgrLink();
         if (commandMgrLink)
         {
-            commandMgrLink->sendCommand("R3", cmd);
+            commandMgrLink->sendCommand(RelaySetState, cmd);
         }
     }
 }
@@ -186,7 +195,7 @@ void HomePage::handleText(String text)
 
 void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
 {
-    getCommandMgrComputer()->sendDebug("HomePage::handleExternalUpdate type=" + String(updateType), "HomePage");
+    getCommandMgrComputer()->sendDebug("HomePage::handleExternalUpdate type=" + String(updateType), F("HomePage"));
     
     // Call base class first to handle heartbeat ACKs
     BaseBoatPage::handleExternalUpdate(updateType, data);
@@ -209,7 +218,7 @@ void HomePage::handleExternalUpdate(uint8_t updateType, const void* data)
                 _buttonImage[buttonIndex] = newColor;
 
                 // Update the button appearance on display
-                String buttonName = "b" + String(buttonIndex + 1);
+                String buttonName = ButtonPrefix + String(buttonIndex + 1);
                 setPicture(buttonName, newColor);
                 setPicture2(buttonName, newColor);
 
@@ -326,48 +335,47 @@ void HomePage::updateTemperature()
 {
     if (isnan(_lastTemp))
     {
-        sendText(ControlTemperature, F("--"));
+        sendText(ControlTemperature, NoValueText);
         return;
     }
 
-    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + "C"); // one decimal place
+    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + CelciusSuffix); // one decimal place
 }
 
 void HomePage::updateHumidity()
 {
     if (isnan(_lastHumidity))
     {
-        sendText(ControlHumidity, F("--"));
+        sendText(ControlHumidity, NoValueText);
         return;
     }
 
-    sendText(ControlHumidity, String(_lastHumidity, 1) + "%");
+    sendText(ControlHumidity, String(_lastHumidity, 1) + PercentSuffix);
 }
 
 void HomePage::updateBearing()
 {
     if (isnan(_lastBearing))
     {
-        sendText(ControlBearingText, F("--"));
+        sendText(ControlBearingText, NoValueText);
         return;
     }
 
     char buffer[10];
-    snprintf(buffer, sizeof(buffer), "%d°", (int)_lastBearing);
+    snprintf(buffer, sizeof(buffer), BearingFormat, (int)_lastBearing);
     sendText(ControlBearingText, buffer);
-	Serial.println("Updated bearing to " + String(buffer));
 }
 
 void HomePage::updateSpeed()
 {
     if (isnan(_lastSpeed))
     {
-        sendText(ControlSpeed, F("--"));
+        sendText(ControlSpeed, NoValueText);
         return;
     }
 
     char buffer[10];
-    snprintf(buffer, sizeof(buffer), "%dkn", (int)_lastSpeed);
+    snprintf(buffer, sizeof(buffer), SpeedUnitKnots, (int)_lastSpeed);
     sendText(ControlSpeed, buffer);
 }
 
@@ -395,19 +403,19 @@ void HomePage::configUpdated()
             _slotToRelay[button] = relayIndex;
 
             // set picture control (button image) - control names in your Nextion might differ
-            setPicture("b" + String(button + 1), _buttonImage[button]);
+            setPicture(ButtonPrefix + String(button + 1), _buttonImage[button]);
 
             // Use short name for home page display
             String shortName = String(config->relayShortNames[relayIndex]);
-            sendText(String("b") + String(button + 1), shortName);
+            sendText(String(ButtonPrefix) + String(button + 1), shortName);
         }
         else
         {
             _slotToRelay[button] = 0xFF;
             _buttonOn[button] = false;
             _buttonImage[button] = ImageButtonColorGrey;
-            setPicture("b" + String(button + 1), _buttonImage[button]);
-            sendText(String("b") + String(button + 1), ""); 
+            setPicture(ButtonPrefix + String(button + 1), _buttonImage[button]);
+            sendText(String(ButtonPrefix) + String(button + 1), "");
         }
     }
 

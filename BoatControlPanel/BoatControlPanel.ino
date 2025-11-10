@@ -2,6 +2,8 @@
 #include <SerialCommandManager.h>
 #include <NextionControl.h>
 
+#include "BoatControlPanelConstants.h"
+
 #include "InterceptDebugCommandHandler.h"
 #include "AckCommandHandler.h"
 #include "ConfigCommandHandler.h"
@@ -104,9 +106,9 @@ void setup()
         warningManager.raiseWarning(WarningType::CompassFailure);
     }
 
-    commandMgrComputer.sendCommand(F("F1"), "");
-    commandMgrLink.sendCommand(F("F1"), "");
-	nextion.sendCommand(F("page 1"));
+    commandMgrComputer.sendCommand(SystemInitialized, "");
+    commandMgrLink.sendCommand(SystemInitialized, "");
+	nextion.sendCommand(PageOne);
 }
 
 void loop()

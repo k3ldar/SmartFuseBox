@@ -34,10 +34,9 @@ void BaseBoatCommandHandler::sendDebugMessage(const String& message, const Strin
 
 bool BaseBoatCommandHandler::parseBooleanValue(const String& value) const
 {
-    return (value == "1" || 
-            value.equalsIgnoreCase("on") || 
-            value.equalsIgnoreCase("true") || 
-            value.equalsIgnoreCase("ok"));
+    return (value == F("1") || 
+        value.equalsIgnoreCase(F("on")) || 
+        value.equalsIgnoreCase(F("true")));
 }
 
 bool BaseBoatCommandHandler::isAllDigits(const String& s) const

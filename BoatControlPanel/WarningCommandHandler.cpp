@@ -1,5 +1,13 @@
 #include "WarningCommandHandler.h"
 
+
+const char WarningsActive[] = "W0";
+const char WarningsList[] = "W1";
+const char WarningStatus[] = "W2";
+const char WarningsClear[] = "W3";
+const char WarningsAdd[] = "W4";
+
+
 WarningCommandHandler::WarningCommandHandler(SerialCommandManager* computerCommandManager, NextionControl* nextionControl, WarningManager* warningManager)
     : BaseBoatCommandHandler(computerCommandManager, nextionControl, warningManager)
 {
@@ -31,7 +39,7 @@ bool WarningCommandHandler::handleCommand(SerialCommandManager* sender, const St
             }
         }
 
-        StringKeyValue param = { "v", String(count) };
+        StringKeyValue param = { ValueParamName, String(count) };
         sendAckOk(sender, cmd, &param);
         return true;
     }
@@ -119,7 +127,7 @@ bool WarningCommandHandler::convertWarningTypeFromString(const String& str, Warn
     uint8_t warningTypeInt = 0;
 
     // Parse the string based on format
-    if (str.startsWith("0x") || str.startsWith("0X"))
+    if (str.startsWith(F("0x")) || str.startsWith(F("0X")))
     {
         // Parse hexadecimal (skip the "0x" prefix)
         warningTypeInt = strtoul(str.c_str() + 2, nullptr, 16);

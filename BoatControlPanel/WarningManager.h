@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <stdint.h>
+#include "BoatControlPanelConstants.h"
 
 /**
  * @enum WarningType

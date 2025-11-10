@@ -66,7 +66,6 @@ protected:
      * - "1" or "0"
      * - "on" or "off" (case-insensitive)
      * - "true" or "false" (case-insensitive)
-     * - "ok" (case-insensitive)
      * 
      * @param value String to parse
      * @return true if the value represents a truthy value, false otherwise

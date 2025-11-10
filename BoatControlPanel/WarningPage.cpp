@@ -39,25 +39,25 @@ String warningTypeToString(WarningType type)
     switch (type)
     {
     case WarningType::DefaultConfiguration:
-        return "Using Default Configuration";
+        return F("Using Default Configuration");
     case WarningType::ConnectionLost:
-        return "Connection Lost To Fuse Box";
+        return F("Connection Lost To Fuse Box");
     case WarningType::HighCompassTemperature:
-        return "High Compass Temperature";
+        return F("High Compass Temperature");
     case WarningType::LowBattery:
-        return "Low Battery";
+        return F("Low Battery");
     case WarningType::SensorFailure:
-        return "Sensor Failure";
+        return F("Sensor Failure");
     case WarningType::CompassFailure:
-        return "Compass Failure";
+        return F("Compass Failure");
     default:
-        return "Unknown Warning";
+        return F("Unknown Warning");
     }
 }
 
 void WarningPage::updateWarningDisplay()
 {
-    sendText(WarningHeader, "System Warnings");
+    sendText(WarningHeader, F("System Warnings"));
     WarningManager* warningMgr = getWarningManager();
 
     if (!warningMgr)
@@ -87,7 +87,7 @@ void WarningPage::updateWarningDisplay()
     // If no warnings are active, display a message
     if (warningText.length() == 0)
     {
-        warningText = "No Active Warnings";
+        warningText = F("No Active Warnings");
     }
 
     // Send the formatted warning list to the Nextion control

@@ -1,5 +1,15 @@
 #include "ConfigCommandHandler.h"
 
+constexpr char ConfigSaveSettings[] = "C0";
+constexpr char ConfigGetSettings[] = "C1";
+constexpr char ConfigResetSettings[] = "C2";
+constexpr char ConfigRenameBoat[] = "C3";
+constexpr char ConfigRenameRelay[] = "C4";
+constexpr char ConfigMapHomeButton[] = "C5";
+constexpr char ConfigSetButtonColor[] = "C6";
+constexpr char ConfigBoatType[] = "C7";
+
+
 ConfigCommandHandler::ConfigCommandHandler(HomePage* homePage)
     : _homePage(homePage)
 {
@@ -11,7 +21,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
     Config* cfg = ConfigManager::getConfigPtr();
     if (!cfg)
     {
-        sendAckErr(sender, command, "Config not available");
+        sendAckErr(sender, command, F("Config not available"));
         return true;
     }
 
@@ -31,7 +41,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             name.trim();
             if (name.length() == 0)
             {
-                sendAckErr(sender, cmd, "Empty name", &params[0]);
+                sendAckErr(sender, cmd, F("Empty name"), &params[0]);
                 return true;
             }
 
@@ -42,7 +52,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         }
         else
         {
-            sendAckErr(sender, cmd, "Missing param");
+            sendAckErr(sender, cmd, F("Missing param"));
         }
     }
     else if (cmd == ConfigRenameRelay)
@@ -55,14 +65,12 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             if (name.length() == 0)
             {
                 // fallback if they sent single token e.g. "RNAME 2" (no name) -> error
-                sendAckErr(sender, cmd, "Missing name", &params[0]);
-                return true;
+                sendAckErr(sender, cmd, F("Missing name"), &params[0]);
             }
 
             if (idx < 0 || idx >= ConfigRelayCount)
             {
-                sendAckErr(sender, cmd, "Index out of range", &params[0]);
-                return true;
+                sendAckErr(sender, cmd, F("Index out of range"), &params[0]);
             }
 
             // Parse short and long names (format: "shortName|longName" or just "shortName")
@@ -101,7 +109,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         }
         else
         {
-            sendAckErr(sender, cmd, "Missing params");
+            sendAckErr(sender, cmd, F("Missing params"));
         }
     }
     else if (cmd == ConfigMapHomeButton)
@@ -114,13 +122,13 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
 
             if (button < 0 || button >= ConfigHomeButtons)
             {
-                sendAckErr(sender, cmd, "Button out of range", &params[0]);
+                sendAckErr(sender, cmd, F("Button out of range"), &params[0]);
                 return true;
             }
 
             if ((relay < 0 || relay >= (int)ConfigRelayCount) && relay != ImageButtonColorDefault)
             {
-                sendAckErr(sender, cmd, "Relay out of range (or 255 to clear)", &params[0]);
+                sendAckErr(sender, cmd, F("Relay out of range (or 255 to clear)"), &params[0]);
                 return true;
             }
 
@@ -129,7 +137,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         }
         else
         {
-            sendAckErr(sender, cmd, "Missing params");
+            sendAckErr(sender, cmd, F("Missing params"));
         }
     }
     else if (command == ConfigSetButtonColor) 
@@ -145,13 +153,13 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
 
             if (button < 0 || button >= (int)ConfigRelayCount)
             {
-                sendAckErr(sender, cmd, "Button out of range", &params[0]);
+                sendAckErr(sender, cmd, F("Button out of range"), &params[0]);
                 return true;
             }
             
             if ((buttonColor < ImageButtonColorBlue || buttonColor > (int)ImageButtonColorYellow) && buttonColor != ImageButtonColorDefault)
             {
-                sendAckErr(sender, cmd, "Button out of range (or 255 to clear)", &params[0]);
+                sendAckErr(sender, cmd, F("Button out of range (or 255 to clear)"), &params[0]);
                 return true;
             }
 
@@ -160,7 +168,8 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         }
         else
         {
-            sendAckErr(sender, cmd, "Missing params");
+            sendAckErr(sender, cmd, F("Missing params"));
+            return true;
         }
     }
     else if (cmd == ConfigSaveSettings)
@@ -174,7 +183,8 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         }
         else
         {
-            sendAckErr(sender, cmd, "EEPROM commit failed");
+            sendAckErr(sender, cmd, F("EEPROM commit failed"));
+            return true;
         }
     }
     else if (cmd == ConfigGetSettings)
@@ -186,25 +196,45 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         // C4 entries - send both short and long names in format: <idx>=<shortName|longName>
         for (uint8_t i = 0; i < ConfigRelayCount; ++i)
         {
-            String relayNames = String(i) + "=" + String(cfg->relayShortNames[i]) + "|" + String(cfg->relayLongNames[i]);
+            String relayNames = String(i) + Equals + String(cfg->relayShortNames[i]) + Pipe + String(cfg->relayLongNames[i]);
             sender->sendCommand(ConfigRenameRelay, relayNames);
         }
 
         // C5 entries
         for (uint8_t s = 0; s < ConfigHomeButtons; ++s)
         {
-            sender->sendCommand(ConfigMapHomeButton, String(s) + "=" + String(cfg->homePageMapping[s]));
+            sender->sendCommand(ConfigMapHomeButton, String(s) + Equals + String(cfg->homePageMapping[s]));
         }
 
         // C6 Send home page button color mappings
         for (uint8_t i = 0; i < ConfigRelayCount; i++)
         {
-            String colorMapping = String(i) + "=" + String(cfg->buttonImage[i]);
+            String colorMapping = String(i) + Equals + String(cfg->buttonImage[i]);
             sender->sendCommand(ConfigSetButtonColor, colorMapping);
         }
 
         sendAckOk(sender, cmd);
     }
+    else if (cmd == ConfigBoatType)
+    {
+        // Expect "C7:type=<value>" where value is 0..3
+        if (paramCount >= 1)
+        {
+            uint8_t type = params[0].value.toInt();
+            if (type > static_cast<uint8_t>(VesselType::Yacht))
+            {
+                sendAckErr(sender, cmd, F("Invalid boat type"), &params[0]);
+                return true;
+            }
+            cfg->vesselType = static_cast<VesselType>(type);
+            sendAckOk(sender, cmd, &params[0]);
+        }
+        else
+        {
+            sendAckErr(sender, cmd, F("Missing param"));
+            return true;
+        }
+	}
     else if (cmd == ConfigResetSettings)
     {
         // Reset to defaults
@@ -213,12 +243,14 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
 	}
     else
     {
-        sendAckErr(sender, cmd, "Unknown config command");
+        sendAckErr(sender, cmd, F("Unknown config command"));
     }
 
     // Notify UI
     if (_homePage)
         _homePage->configUpdated();
+
+    return true;
 }
 
 const String* ConfigCommandHandler::supportedCommands(size_t& count) const

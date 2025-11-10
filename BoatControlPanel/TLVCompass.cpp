@@ -31,7 +31,6 @@ bool TLVCompass::begin()
     // Magnetometer
     if (!sensor.begin())
     {
-        Serial.println("TLx493D init failed!");
         return false;
     }
 
@@ -41,7 +40,6 @@ bool TLVCompass::begin()
     delay(500);
     if (!mpu.begin())
     {
-        Serial.println("MPU6050 init failed!");
         return false;
     }
     mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
@@ -50,7 +48,7 @@ bool TLVCompass::begin()
 #endif
 
     lastUpdate = millis();
-    Serial.println("Sensors initialized. Hold still for accel calibration...");
+
     return true;
 }
 
