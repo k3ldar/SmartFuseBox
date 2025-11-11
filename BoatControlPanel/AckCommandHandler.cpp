@@ -98,6 +98,20 @@ bool AckCommandHandler::handleCommand(SerialCommandManager* sender, const String
 			sendDebugMessage("Invalid R4 ACK format: paramCount=" + String(paramCount), AckCommand);
         }
     }
+    else if (key == SoundSignalActive && val.equalsIgnoreCase(AckSuccess))
+    {
+        if (paramCount == 1)
+        {
+            bool isOn = parseBooleanValue(params[1].value);
+
+            BoolStateUpdate update = { isOn };
+            notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::SoundSignal), &update);
+        }
+        else
+        {
+            sendDebugMessage("Invalid R4 ACK format: paramCount=" + String(paramCount), AckCommand);
+        }
+    }
 	else
     {
 		sendDebugMessage("Unknown or invalid ACK: key='" + key + "', val='" + val + "'", AckCommand);

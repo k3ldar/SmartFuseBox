@@ -1,3 +1,4 @@
+#include "SoundSignalsPage.h"
 #include <Arduino.h>
 #include <SerialCommandManager.h>
 #include <NextionControl.h>

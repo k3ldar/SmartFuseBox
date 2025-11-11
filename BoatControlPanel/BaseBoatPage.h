@@ -21,7 +21,7 @@ enum class PageUpdateType : uint8_t {
     CompassTemp = 0x09,
     WaterLevel = 0x10,
     WaterPumpActive = 0x0A,
-    SensorHornActive = 0x0B,
+    SoundSignal = 0x0B,
 };
 
 // Data structure for relay state updates

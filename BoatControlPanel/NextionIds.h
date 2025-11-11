@@ -4,6 +4,12 @@ constexpr uint8_t PageSplash = 0;
 constexpr uint8_t PageHome = 1;
 constexpr uint8_t PageWarning = 2;
 constexpr uint8_t PageRelay = 3;
+constexpr uint8_t PageSoundSignals = 4;
+constexpr uint8_t PageSoundManeuver = 5;
+constexpr uint8_t PageSoundFog = 6;
+constexpr uint8_t PageSoundNarrowChannel = 7;
+constexpr uint8_t PageSoundEmergency = 8;
+constexpr uint8_t PageSoundOther = 9;
 
 constexpr uint8_t InvalidButtonIndex = 0xFF;
 

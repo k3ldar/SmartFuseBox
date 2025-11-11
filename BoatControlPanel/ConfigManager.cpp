@@ -107,6 +107,7 @@ void ConfigManager::resetToDefaults()
     }
 
 	_cfg.vesselType = VesselType::Motor;
+	_cfg.hornRelayIndex = 0xFF; // none
 
     // compute checksum
     _cfg.checksum = 0;

@@ -8,6 +8,9 @@ constexpr char RelayRetrieveStates[] = "R2";
 constexpr char RelaySetState[] = "R3";
 constexpr char RelayStatusGet[] = "R4";
 
+constexpr char SoundSignalCancel[] = "H0";
+constexpr char SoundSignalActive[] = "H1";
+
 constexpr char AckSuccess[] = "ok";
 constexpr char ValueParamName[] = "v";
 
