@@ -12,9 +12,9 @@ constexpr char ControlBoatName[] = "t0";
 constexpr char ControlWarning[] = "p2";
 constexpr char NoValueText[] = "--";
 constexpr char SpeedUnitKnots[] = "%d kn";
-constexpr char BearingFormat[] = "%d°";
+constexpr char BearingFormat[] = "%dÂ°";
 constexpr char PercentSuffix[] = "%";
-constexpr char CelciusSuffix[] = "C";
+constexpr char CelsiusSuffix[] = "C";
 constexpr char ButtonOn[] = "=1";
 constexpr char ButtonOff[] = "=0";
 
@@ -339,7 +339,7 @@ void HomePage::updateTemperature()
         return;
     }
 
-    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + CelciusSuffix); // one decimal place
+    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + CelciusSuffix); // one decimal place 
 }
 
 void HomePage::updateHumidity()
