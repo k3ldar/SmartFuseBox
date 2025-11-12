@@ -70,9 +70,10 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 return true;
             }
 
-            if (idx < 0 || idx >= ConfigRelayCount)
+            if (idx >= ConfigRelayCount)
             {
                 sendAckErr(sender, cmd, F("Index out of range"), &params[0]);
+                return true;
             }
 
             // Parse short and long names (format: "shortName|longName" or just "shortName")

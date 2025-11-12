@@ -145,7 +145,7 @@ void RelayPage::handleTouch(uint8_t compId, uint8_t eventType)
 
             // send R4 to get relay state, to confirm change and reflect any failures etc,
             // this will prevent the UI being in an incorrect state if the command fails
-			param.value = "";
+			      param.value = "";
             commandMgrLink->sendCommand(RelayStatusGet, "", "", &param, 1);
         }
     }
