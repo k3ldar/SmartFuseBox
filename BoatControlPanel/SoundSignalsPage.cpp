@@ -1,13 +1,13 @@
 #include "SoundSignalsPage.h"
 
 
-// Nextion Names/Ids on current Home Page
-constexpr uint8_t BtnManeuvering = 4; // b1
+// Nextion Names/Ids on current Page
+constexpr uint8_t BtnManeuvering = 4; // b0
 constexpr uint8_t BtnFog = 6; // b2
-constexpr uint8_t BtnNarrowChannel = 5; // b3
-constexpr uint8_t BtnEmergency = 7; // b4
-constexpr uint8_t BtnOther = 8; // b5
-constexpr uint8_t BtnCancelAll = 9; // b6
+constexpr uint8_t BtnNarrowChannel = 5; // b1
+constexpr uint8_t BtnEmergency = 7; // b3
+constexpr uint8_t BtnOther = 8; // b4
+constexpr uint8_t BtnCancelAll = 9; // b5
 constexpr uint8_t ButtonNext = 3;
 constexpr uint8_t ButtonPrevious = 2;
 constexpr char CancelButton[] = "b5";
@@ -50,15 +50,15 @@ void SoundSignalsPage::handleTouch(uint8_t compId, uint8_t eventType)
     switch (compId)
     {
     case BtnManeuvering:
-        setPage(PageSoundManeuver);
+        setPage(PageSoundManeuveringSignals);
         break;
 
     case BtnFog:
-        setPage(PageSoundFog);
+        setPage(PageSoundFogSignals);
         break;
 
     case BtnNarrowChannel:
-        setPage(PageSoundNarrowChannel);
+        setPage(PageSoundOvertaking);
         break;
 
     case BtnEmergency:

@@ -87,6 +87,11 @@
     </ClCompile>
     <ClCompile Include="AckCommandHandler.cpp" />
     <ClCompile Include="SensorCommandHandler.cpp" />
+    <ClCompile Include="SoundEmergencyPage.cpp" />
+    <ClCompile Include="SoundFogPage.cpp" />
+    <ClCompile Include="SoundManeuveringPage.cpp" />
+    <ClCompile Include="SoundOtherPage.cpp" />
+    <ClCompile Include="SoundOvertakingPage.cpp" />
     <ClCompile Include="SoundSignalsPage.cpp" />
     <ClCompile Include="SystemCommandHandler.cpp" />
     <ClCompile Include="TLVCompass.cpp">
@@ -117,6 +122,11 @@
     <ClInclude Include="AckCommandHandler.h" />
     <ClInclude Include="InterceptDebugCommandHandler.h" />
     <ClInclude Include="SensorCommandHandler.h" />
+    <ClInclude Include="SoundEmergencyPage.h" />
+    <ClInclude Include="SoundFogPage.h" />
+    <ClInclude Include="SoundManeuveringPage.h" />
+    <ClInclude Include="SoundOtherPage.h" />
+    <ClInclude Include="SoundOvertakingPage.h" />
     <ClInclude Include="SoundSignalsPage.h" />
     <ClInclude Include="SystemCommandHandler.h" />
     <ClInclude Include="WarningCommandHandler.h" />

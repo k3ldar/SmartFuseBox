@@ -10,6 +10,18 @@ constexpr char RelayStatusGet[] = "R4";
 
 constexpr char SoundSignalCancel[] = "H0";
 constexpr char SoundSignalActive[] = "H1";
+constexpr char SoundSignalSoS[] = "H2";
+constexpr char SoundSignalFog[] = "H3";
+constexpr char SoundSignalMoveStarboard[] = "H4";
+constexpr char SoundSignalMovePort[] = "H5";
+constexpr char SoundSignalMoveAstern[] = "H6";
+constexpr char SoundSignalMoveDanger[] = "H7";
+constexpr char SoundSignalOvertakeStarboard[] = "H8";
+constexpr char SoundSignalOvertakePort[] = "H9";
+constexpr char SoundSignalOvertakeConsent[] = "H10";
+constexpr char SoundSignalOvertakeDanger[] = "H11";
+constexpr char SoundSignalTest[] = "H12";
+
 
 constexpr char AckSuccess[] = "ok";
 constexpr char ValueParamName[] = "v";
