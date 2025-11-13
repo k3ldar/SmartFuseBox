@@ -59,7 +59,6 @@ These commands are used to send sensor data from the Boat Control Panel to a com
 | `S5` — Compass Temp | `S5:v=23.4` | Send compass temperature sensor data. Param format: `<sensor>=<value>`. |
 | `S6` — Water Level | `S6:v=3.4` | Send water level sensor data. Param format: `<sensor>=<value>`. |
 | `S7` — Water Pump Active  | `S7:v=1` | Send water pump active status. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
-| `S8` — Horn Active  | `S8:v=1` | Send horn active status. Param format: `<sensor>=<value>`, 0 = off, 1 = on. |
 
 ## Warning Commands
 These commands are used to send warning data from the control panel to link/computer. WarningType corresponds to the enum in WarningManager.h.
@@ -71,3 +70,23 @@ These commands are used to send warning data from the control panel to link/comp
 | `W2` — Warning Status | `W2:0x05=1` | Sends warning status for each warning. Param format: `<WarningType>=<bool>`. |
 | `W3` — Clear Warnings | `W3` | Clears all warning data. Param format: No Parameters. |
 | `W4` — Warning Set Status | `W4:0x06=1` | Adds or removes a warning to the list of warnings. Param format: `<WarningType>=<bool>`. |
+
+
+## Sound Signal Commands (Fog Horn)
+These commands are used to activate, query or deactivate signal sounds (Fog Horn Sounds).
+
+| Command | Example | Purpose |
+|---|---|---|
+| `H0` — Cancel All | `H0` | Cancels any sound signals immediately.. Param format: No Parameters. |
+| `H1` — Is Active | `H1` | Retrieves active status of sound signals in form of <value>=<bool>. |
+| `H2` — Danger | `H2` | Activates SOS horn sound until cancelled ...---... Param format: No Parameters.  |
+| `H3` — Fog sound | `H3` | Activates Fog sound (depending on boat type) every 2 minutes until cancelled. Param format: No Parameters. |
+| `H4` — Maneuver Starboard | `H4` | Activates maneuver starboard sound. Param format: No Parameters. |
+| `H5` — Maneuver Port | `H5` | Activates maneuver port sound. Param format: No Parameters. |
+| `H6` — Maneuver Astern | `H6` | Activates maneuver astern sound. Param format: No Parameters. |
+| `H7` — Maneuver Danger | `H7` | Activates maneuver danger sound. Param format: No Parameters. |
+| `H8` — Overtake Starboard | `H8` | Activates overtake starboard sound. Param format: No Parameters. |
+| `H9` — Overtake Port | `H9` | Activates overtake port sound. Param format: No Parameters. |
+| `H10` — Overtake Consent | `H10` | Activates overtake astern sound. Param format: No Parameters. |
+| `H11` — Overtake Danger | `H11` | Activates overtake danger sound. Param format: No Parameters. |
+| `H12` — Test | `H12` | Tests the signal sound. Param format: No Parameters. |

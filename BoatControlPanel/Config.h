@@ -36,5 +36,6 @@ struct Config {
     uint8_t homePageMapping[ConfigHomeButtons]; // 0..7 or 0xFF = empty
     uint8_t buttonImage[ConfigRelayCount]; // 0..7 or 0xFF = empty
     VesselType vesselType;
+	uint8_t hornRelayIndex; // 0..7 or 0xFF = none
     uint16_t checksum;
 } __attribute__((packed));

@@ -90,7 +90,7 @@ void RelayPage::handleTouch(uint8_t compId, uint8_t eventType)
         break;
 
     case ButtonNext:
-        setPage(PageHome);
+        setPage(PageSoundSignals);
         return;
 
     case ButtonPrevious:
@@ -185,8 +185,8 @@ void RelayPage::handleExternalUpdate(uint8_t updateType, const void* data)
                     Config* config = getConfig();
                     String relayName = config ? String(config->relayLongNames[update->relayIndex]) : String(update->relayIndex);
                     commandMgrComputer->sendDebug(
-                        relayName + " state updated to " + (update->isOn ? "ON" : "OFF"),
-                        "RelayPage"
+                        relayName + " state updated to " + (update->isOn ? F("ON") : F("OFF")),
+                        F("RelayPage")
                     );
                 }
 

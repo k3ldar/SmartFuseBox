@@ -75,11 +75,6 @@ bool SensorCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         BoolStateUpdate update = { val.toInt() > 0 };
         notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::WaterPumpActive), &update);
     }
-    else if (cmd == SensorHornActive)
-    {
-        BoolStateUpdate update = { val.toInt() > 0 };
-        notifyCurrentPage(static_cast<uint8_t>(PageUpdateType::SensorHornActive), &update);
-    }
     else
     {
         sendDebugMessage(F("Unknown or invalid Sensor command"), F("SensorCommandHandler"));

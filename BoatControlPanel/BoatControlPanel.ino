@@ -14,6 +14,12 @@
 #include "HomePage.h"
 #include "WarningPage.h"
 #include "RelayPage.h"
+#include "SoundSignalsPage.h"
+#include "SoundOvertakingPage.h"
+#include "SoundFogPage.h"
+#include "SoundManeuveringPage.h"
+#include "SoundEmergencyPage.h"
+#include "SoundOtherPage.h"
 
 #include "Config.h"
 #include "ConfigManager.h"
@@ -50,8 +56,16 @@ WarningManager warningManager(&commandMgrLink, HeartbeatIntervalMs, HeartbeatTim
 HomePage homePage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
 WarningPage warningPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
 RelayPage relayPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
-BaseDisplayPage* pages[] = { &homePage, &warningPage, &relayPage };
-NextionControl nextion(&NEXTION_SERIAL, pages, sizeof(pages) / sizeof(pages[0]));
+SoundSignalsPage soundSignalsPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+SoundOvertakingPage soundOvertakingPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+SoundFogPage soundFogPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+SoundManeuveringPage soundManeuveringPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+SoundEmergencyPage soundEmergencyPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+SoundOtherPage soundOtherPage(&NEXTION_SERIAL, &warningManager, &commandMgrLink, &commandMgrComputer);
+
+BaseDisplayPage* displayPages[] = { &homePage, &warningPage, &relayPage, &soundSignalsPage, &soundOvertakingPage,
+    &soundFogPage, &soundManeuveringPage, &soundEmergencyPage, &soundOtherPage };
+NextionControl nextion(&NEXTION_SERIAL, displayPages, sizeof(displayPages) / sizeof(displayPages[0]));
 
 // link command handlers
 InterceptDebugHandler interceptDebugHandler(&commandMgrComputer);
