@@ -1,11 +1,16 @@
-#include "RelayCommandHandler.h"
-#include "BaseCommandHandler.h"
+#include <Arduino.h>
+#include <stdint.h>
 #include <UnoWiFiDevEd.h>
 #include <Adafruit_Sensor.h>
-#include <Arduino.h>
 #include <dht11.h>
 #include <SerialCommandManager.h>
+
 #include "Queue.h"
+#include "BoatElectronicsConstants.h"
+#include "SoundManager.h"
+#include "SoundCommandHandler.h"
+#include "RelayCommandHandler.h"
+#include "BaseCommandHandler.h"
 
 
 #define COMPUTER_SERIAL Serial
@@ -48,7 +53,10 @@ void onLinkCommandReceived(SerialCommandManager* mgr);
 SerialCommandManager commandMgrComputer(&COMPUTER_SERIAL, onComputerCommandReceived, '\n', ':', '=', 500, 64);
 SerialCommandManager commandMgrLink(&LINK_SERIAL, onLinkCommandReceived, '\n', ':', '=', 500, 64);
 
+SoundManager soundManager;
+
 RelayCommandHandler relayHandler(&commandMgrComputer, &commandMgrLink, Relays, TotalRelays);
+SoundCommandHandler soundHandler(&commandMgrComputer, &commandMgrLink, &soundManager);
 
 unsigned long nextWaterSensorCheck = 5000;
 Queue waterPumpQueue(15);
@@ -62,11 +70,11 @@ unsigned long lastSerialConnectAttempt = 0;
 
 void setup()
 {
-    ISerialCommandHandler* linkHandlers[] = { &relayHandler } ;
+    ISerialCommandHandler* linkHandlers[] = { &relayHandler, &soundHandler } ;
     size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
     commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
-    ISerialCommandHandler* computerHandlers[] = { &relayHandler };
+    ISerialCommandHandler* computerHandlers[] = { &relayHandler, &soundHandler };
     size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
     commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 
@@ -89,6 +97,7 @@ void loop()
     reconnectSerial(now);
     commandMgrComputer.readCommands();
     commandMgrLink.readCommands();
+	soundManager.update(now);
 
     getWaterSensorValue(now);
     readDHT11Sensor(now);

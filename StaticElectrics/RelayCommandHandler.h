@@ -19,7 +19,7 @@ private:
 public:
     RelayCommandHandler(SerialCommandManager* commandMgrComputer, SerialCommandManager* commandMgrLink, const int* relayPins, int totalRelays);
     ~RelayCommandHandler();
-    void handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount) override;
+    bool handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount) override;
 
     const String* supportedCommands(size_t& count) const override;
 

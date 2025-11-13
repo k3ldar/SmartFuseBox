@@ -1,7 +1,7 @@
 #include "RelayCommandHandler.h"
 
 RelayCommandHandler::RelayCommandHandler(SerialCommandManager* commandMgrComputer, SerialCommandManager* commandMgrLink, const int* relayPins, int totalRelays)
-    : _commandMgrComputer(commandMgrComputer), _commandMgrLink(commandMgrLink), _relayCount(totalRelays)
+    : _relayStatus(nullptr), _relays(nullptr), _relayCount(totalRelays), _commandMgrComputer(commandMgrComputer), _commandMgrLink(commandMgrLink)
 {
     _relays = new int[_relayCount];
     memcpy(_relays, relayPins, sizeof(int) * _relayCount);
@@ -26,7 +26,7 @@ const String* RelayCommandHandler::supportedCommands(size_t& count) const
     return cmds;
 }
 
-void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
+bool RelayCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
     String cmd = command;
     cmd.trim();
@@ -46,6 +46,7 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         else
         {
 			sendAckErr(sender, cmd, "Invalid parameters");
+            return true;
         }
     }
     else if (cmd == RelayTurnAllOn)
@@ -62,6 +63,7 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         else
 		{
             sendAckErr(sender, cmd, "Invalid parameters");
+			return true;
         }
     }
     else if (cmd == RelayRetrieveStates)
@@ -81,6 +83,7 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         else
         {
             sendAckErr(sender, cmd, "Invalid parameters");
+			return true;
         }
     }
     else if (cmd == RelaySetState)
@@ -93,7 +96,7 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
             if (relayIndex < 0 || relayIndex >= _relayCount)
             {
                 sendAckErr(sender, cmd, "Invalid relay index");
-                return;
+                return true;
 			}
 
             setRelayStatus(relayIndex, state > 0);
@@ -102,6 +105,7 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         else
         {
             sendAckErr(sender, cmd, "Invalid parameters");
+			return true;
         }
 	}
     else if (cmd == RelayStatusGet)
@@ -112,7 +116,7 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
             if (relayIndex < 0 || relayIndex >= _relayCount)
             {
                 sendAckErr(sender, cmd, "Invalid relay index");
-                return;
+                return true;
             }
 
             uint8_t status = getRelayStatus(relayIndex);
@@ -122,12 +126,16 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         else
         {
             sendAckErr(sender, cmd, "Invalid parameters");
+			return true;
         }
 	}
     else
     {
         sendAckErr(sender, cmd, "Unknown relay command");
+        return true;
     }
+
+	return true;
 }
 
 
