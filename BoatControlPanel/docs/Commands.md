@@ -23,6 +23,7 @@ These are commands used to configure the system settings and can only be sent fr
 | `C5` — Map home button | `C5:1=3` (map) — `C5:1=255` (unmap) | Map a home-page slot to a relay. Param format: `<slot>:<relay>`. `button` must be 0..3 (`HOME_BUTTONS`). `relay` must be 0..7 or `255` to clear/unmap. |
 | `C6` — Map home button color | `C6:0=4` (map button 1 to Red when activated) — `C6:1=255` (unmap colors) | Map a home-page button to a color when activated (on). Param format: `<slot>:<relay>`. `slot` must be 0..3 (`ConfigManager::HOME_SLOTS`). `relay` must be 0..7 or `255` to clear/unmap. |
 | `C7` — Set vessel type | `C7:v=1` | Set the vessel type. Param format: `v=<type>`. Possible values for `<type>` are: 0 (Motor), 1 (Sail), 2 (Fishing), 3 (Yacht). Uses enum values as defined in `Config.h`. Invalid or missing value → error. |
+| `C8` — Sound relay button | `C8:v=3` (map) — `C8:v=255` (unmap) | Map the sound system (horn) to a relay. Param format: `<value>:<relay>`. `button` must be 0..7 (`RELAY_COUNT`). `relay` must be 0..7 or `255` to clear/unmap. |
 
 Common error responses you may see: `Missing param`, `Missing params`, `Missing name`, `Empty name`, `Index out of range`, `Slot out of range`, `Relay out of range (or 255 to clear)`, `EEPROM commit failed`, `Unknown config command`.
 

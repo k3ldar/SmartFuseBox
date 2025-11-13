@@ -8,6 +8,7 @@ constexpr char ConfigRenameRelay[] = "C4";
 constexpr char ConfigMapHomeButton[] = "C5";
 constexpr char ConfigSetButtonColor[] = "C6";
 constexpr char ConfigBoatType[] = "C7";
+constexpr char ConfigSoundRelayId[] = "C8";
 
 
 ConfigCommandHandler::ConfigCommandHandler(HomePage* homePage)
@@ -129,7 +130,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 return true;
             }
 
-            if ((relay < 0 || relay >= (int)ConfigRelayCount) && relay != ImageButtonColorDefault)
+            if ((relay < 0 || relay >= (int)ConfigRelayCount) && relay != DefaultValue)
             {
                 sendAckErr(sender, cmd, F("Relay out of range (or 255 to clear)"), &params[0]);
                 return true;
@@ -160,7 +161,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
                 return true;
             }
             
-            if ((buttonColor < ImageButtonColorBlue || buttonColor > (int)ImageButtonColorYellow) && buttonColor != ImageButtonColorDefault)
+            if ((buttonColor < ImageButtonColorBlue || buttonColor > (int)ImageButtonColorYellow) && buttonColor != DefaultValue)
             {
                 sendAckErr(sender, cmd, F("Button out of range (or 255 to clear)"), &params[0]);
                 return true;
@@ -173,6 +174,27 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         {
             sendAckErr(sender, cmd, F("Missing params"));
             return true;
+        }
+    }
+    else if (cmd == ConfigSoundRelayId)
+    {
+        // Expect "MAP <value>=<relay>" where relay 0..7 (or 255 to unmap)
+        if (paramCount >= 1)
+        {
+            uint8_t relay = params[0].value.toInt(); // if value empty, toInt() -> 0
+
+            if ((relay < 0 || relay >= (int)ConfigRelayCount) && relay != DefaultValue)
+            {
+                sendAckErr(sender, cmd, F("Relay out of range (or 255 to clear)"), &params[0]);
+                return true;
+            }
+
+            cfg->hornRelayIndex = relay;
+            sendAckOk(sender, cmd, &params[0]);
+        }
+        else
+        {
+            sendAckErr(sender, cmd, F("Missing params"));
         }
     }
     else if (cmd == ConfigSaveSettings)
@@ -259,7 +281,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
 const String* ConfigCommandHandler::supportedCommands(size_t& count) const
 {
     static const String cmds[] = { ConfigSaveSettings, ConfigGetSettings, ConfigResetSettings, ConfigRenameBoat,
-        ConfigRenameRelay, ConfigMapHomeButton, ConfigSetButtonColor };
+        ConfigRenameRelay, ConfigMapHomeButton, ConfigSetButtonColor, ConfigBoatType, ConfigSoundRelayId };
     count = sizeof(cmds) / sizeof(cmds[0]);
     return cmds;
 }
