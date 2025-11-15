@@ -1,15 +1,27 @@
 #include "RelayCommandHandler.h"
+#include "StaticElectricConstants.h"
 
-RelayCommandHandler::RelayCommandHandler(SerialCommandManager* commandMgrComputer, SerialCommandManager* commandMgrLink, const int* relayPins, int totalRelays)
-    : _commandMgrComputer(commandMgrComputer), _commandMgrLink(commandMgrLink), _relayCount(totalRelays)
+
+constexpr char RelayTurnAllOff[] = "R0";
+constexpr char RelayTurnAllOn[] = "R1";
+constexpr char RelayRetrieveStates[] = "R2";
+constexpr char RelaySetState[] = "R3";
+constexpr char RelayStatusGet[] = "R4";
+
+
+RelayCommandHandler::RelayCommandHandler(SerialCommandManager* commandMgrComputer, SerialCommandManager* commandMgrLink, const uint8_t* relayPins, uint8_t totalRelays)
+    : _relayStatus(nullptr), _relays(nullptr), _relayCount(totalRelays), _reservedSoundRelay(DefaultValue), 
+    _commandMgrComputer(commandMgrComputer), _commandMgrLink(commandMgrLink)
 {
-    _relays = new int[_relayCount];
-    memcpy(_relays, relayPins, sizeof(int) * _relayCount);
+    _relays = new uint8_t[_relayCount];
+    memcpy(_relays, relayPins, sizeof(uint8_t) * _relayCount);
 
     _relayStatus = new bool[_relayCount];
 
-    for (int i = 0; i < totalRelays; i++)
+    for (uint8_t i = 0; i < totalRelays; i++)
+    {
         _relayStatus[i] = false;
+    }
 }
 
 RelayCommandHandler::~RelayCommandHandler()
@@ -26,7 +38,7 @@ const String* RelayCommandHandler::supportedCommands(size_t& count) const
     return cmds;
 }
 
-void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
+bool RelayCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
     String cmd = command;
     cmd.trim();
@@ -45,7 +57,8 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         }
         else
         {
-			sendAckErr(sender, cmd, "Invalid parameters");
+			sendAckErr(sender, cmd, F("Invalid parameters"));
+            return true;
         }
     }
     else if (cmd == RelayTurnAllOn)
@@ -61,7 +74,8 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         }
         else
 		{
-            sendAckErr(sender, cmd, "Invalid parameters");
+            sendAckErr(sender, cmd, F("Invalid parameters"));
+			return true;
         }
     }
     else if (cmd == RelayRetrieveStates)
@@ -69,7 +83,7 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         if (paramCount == 0)
         {
             // Retrieve states of all relays
-            for (int i = 0; i < _relayCount; i++)
+            for (uint8_t i = 0; i < _relayCount; i++)
             {
                 uint8_t status = getRelayStatus(i);
                 StringKeyValue param = { String(i), String(status) };
@@ -80,39 +94,53 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         }
         else
         {
-            sendAckErr(sender, cmd, "Invalid parameters");
+            sendAckErr(sender, cmd, F("Invalid parameters"));
+			return true;
         }
     }
     else if (cmd == RelaySetState)
     {
         if (paramCount == 1)
         {
-            int relayIndex = params[0].key.toInt();
-            int state = params[0].value.toInt();
+            uint8_t relayIndex = params[0].key.toInt();
+            uint8_t state = params[0].value.toInt();
 
-            if (relayIndex < 0 || relayIndex >= _relayCount)
+            if (relayIndex >= _relayCount)
             {
-                sendAckErr(sender, cmd, "Invalid relay index");
-                return;
+                sendAckErr(sender, cmd, F("Invalid relay index"));
+                return true;
 			}
 
-            setRelayStatus(relayIndex, state > 0);
+            RelayResult status = setRelayStatus(relayIndex, state > 0);
+
+            if (status == RelayResult::InvalidIndex)
+            {
+                sendAckErr(sender, cmd, F("Invalid relay index"), &params[0]);
+                return true;
+			}
+            else if (status == RelayResult::Reserved)
+            {
+                sendAckErr(sender, cmd, F("Relay is reserved for sound system"), &params[0]);
+                return true;
+			}
+
 			broadcastRelayStatus(cmd, &params[0]);
         }
         else
         {
-            sendAckErr(sender, cmd, "Invalid parameters");
+            sendAckErr(sender, cmd, F("Invalid parameters"));
+			return true;
         }
 	}
     else if (cmd == RelayStatusGet)
     {
         if (paramCount == 1)
         {
-            int relayIndex = params[0].key.toInt();
-            if (relayIndex < 0 || relayIndex >= _relayCount)
+            uint8_t relayIndex = params[0].key.toInt();
+            if (relayIndex >= _relayCount)
             {
-                sendAckErr(sender, cmd, "Invalid relay index");
-                return;
+                sendAckErr(sender, cmd, F("Invalid relay index"));
+                return true;
             }
 
             uint8_t status = getRelayStatus(relayIndex);
@@ -121,40 +149,61 @@ void RelayCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
         }
         else
         {
-            sendAckErr(sender, cmd, "Invalid parameters");
+            sendAckErr(sender, cmd, F("Invalid parameters"));
+			return true;
         }
 	}
     else
     {
-        sendAckErr(sender, cmd, "Unknown relay command");
+        sendAckErr(sender, cmd, F("Unknown relay command"));
+        return true;
     }
-}
 
+	return true;
+}
 
 void RelayCommandHandler::setup()
 {
     // Initialize all relay pins
-    for (int i = 0; i < _relayCount; i++)
+    for (uint8_t i = 0; i < _relayCount; i++)
     {
         _relayStatus[i] = false;
         pinMode(_relays[i], OUTPUT);
         digitalWrite(_relays[i], HIGH);
     }
+
+	Config* config = ConfigManager::getConfigPtr();
+
+	if (config != nullptr)
+    {
+        _reservedSoundRelay = config->hornRelayIndex;
+    }
 }
 
-void RelayCommandHandler::setRelayStatus(int relayIndex, bool isOn)
+RelayResult RelayCommandHandler::setRelayStatus(uint8_t relayIndex, bool isOn)
 {
-    if (relayIndex < 0 || relayIndex >= _relayCount)
-        return;
+    if (relayIndex >= _relayCount)
+    {
+        return RelayResult::InvalidIndex;
+    }
+
+    if (relayIndex == _reservedSoundRelay)
+    {
+        return RelayResult::Reserved;
+    }
 
     _relayStatus[relayIndex] = isOn;
     digitalWrite(_relays[relayIndex], isOn ? LOW : HIGH);
+
+	return RelayResult::Success;
 }
 
-uint8_t RelayCommandHandler::getRelayStatus(int relayIndex) const
+uint8_t RelayCommandHandler::getRelayStatus(uint8_t relayIndex) const
 {
-    if (relayIndex < 0 || relayIndex >= _relayCount)
+    if (relayIndex >= _relayCount)
+    {
         return 0xFF;
+    }
 
 	return _relayStatus[relayIndex] ? 1 : 0;
 }

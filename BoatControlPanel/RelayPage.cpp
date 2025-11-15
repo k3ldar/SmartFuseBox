@@ -74,8 +74,25 @@ void RelayPage::refresh(unsigned long now)
 // Handle touch events for buttons
 void RelayPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+    Config* config = getConfig();
+
+    if (!config)
+    {
+        return;
+    }
+
+    if (config->hornRelayIndex < DefaultValue &&
+        compId - 4 == config->hornRelayIndex)
+    {
+        // relay button is configured to sound system (horn) and will be
+        // controlled via own command methods from sound pages
+        setPage(PageSoundSignals);
+        return;
+    }
+
     // Map component ID to button index
     uint8_t buttonIndex = InvalidButtonIndex;
+
     switch (compId)
     {
     case Button1:
@@ -101,9 +118,8 @@ void RelayPage::handleTouch(uint8_t compId, uint8_t eventType)
         return;
     }
 
-    Config* config = getConfig();
     // Check if we have a valid config and the button is mapped to a relay
-    if (!config || buttonIndex >= ConfigRelayCount)
+    if (buttonIndex >= ConfigRelayCount)
     {
         return;
     }

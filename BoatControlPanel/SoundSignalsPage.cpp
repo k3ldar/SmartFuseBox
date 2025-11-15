@@ -47,6 +47,8 @@ void SoundSignalsPage::refresh(unsigned long now)
 // Handle touch events for buttons
 void SoundSignalsPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+	(void)eventType;
+
     switch (compId)
     {
     case BtnManeuvering:

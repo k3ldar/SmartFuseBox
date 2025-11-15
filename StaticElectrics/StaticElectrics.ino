@@ -1,54 +1,49 @@
-#include "RelayCommandHandler.h"
-#include "BaseCommandHandler.h"
+#include <Arduino.h>
+#include <stdint.h>
 #include <UnoWiFiDevEd.h>
 #include <Adafruit_Sensor.h>
-#include <Arduino.h>
 #include <dht11.h>
 #include <SerialCommandManager.h>
+
+#include "StaticElectricConstants.h"
+#include "Config.h"
+#include "ConfigManager.h"
+#include "ConfigCommandHandler.h"
 #include "Queue.h"
+#include "SoundManager.h"
+#include "SoundCommandHandler.h"
+#include "RelayCommandHandler.h"
+#include "BaseCommandHandler.h"
 
 
 #define COMPUTER_SERIAL Serial
 #define LINK_SERIAL Serial1
 
-const int DefaultDelay = 5;
+constexpr int DefaultDelay = 5;
 
-const int WaterSensorPin = A0;
-const int WaterSensorActivePin = D8;
+constexpr uint8_t WaterSensorPin = A0;
+constexpr uint8_t WaterSensorActivePin = D8;
 
-const int SensorCheckIntervalMs = 5000;
+constexpr unsigned long SensorCheckIntervalMs = 5000;
 
-const unsigned long serialInitTimeoutMs = 300;
-const unsigned long serialReconnectMs = 10000;
+constexpr unsigned long serialInitTimeoutMs = 300;
+constexpr unsigned long serialReconnectMs = 10000;
 
-const int TempSensorPin = D9;
-
-// Digital pins for relays
-const int Relay4 = D4;
-const int Relay3 = D5;
-const int Relay2 = D6;
-const int Relay1 = D7;
-
-// Analog pins used as digital (A2–A5 → 16–19)
-const int Relay8 = 16;
-const int Relay7 = 17;
-const int Relay6 = 18;
-const int Relay5 = 19;
-
-const int TotalRelays = 8;
-
-int Relays[TotalRelays] = { Relay1, Relay2, Relay3, Relay4, Relay5, Relay6, Relay7, Relay8 };
+constexpr uint8_t TempSensorPin = D9;
 
 // forward declares
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection = false);
-void reconnectSerial(unsigned long now);
 void onComputerCommandReceived(SerialCommandManager* mgr);
 void onLinkCommandReceived(SerialCommandManager* mgr);
 
 SerialCommandManager commandMgrComputer(&COMPUTER_SERIAL, onComputerCommandReceived, '\n', ':', '=', 500, 64);
 SerialCommandManager commandMgrLink(&LINK_SERIAL, onLinkCommandReceived, '\n', ':', '=', 500, 64);
 
+SoundManager soundManager;
+
 RelayCommandHandler relayHandler(&commandMgrComputer, &commandMgrLink, Relays, TotalRelays);
+SoundCommandHandler soundHandler(&commandMgrComputer, &commandMgrLink, &soundManager);
+ConfigCommandHandler configHandler(&soundManager);
 
 unsigned long nextWaterSensorCheck = 5000;
 Queue waterPumpQueue(15);
@@ -59,120 +54,104 @@ unsigned long nextWeatherSensorCheck = 2500;
 unsigned long lastSerialConnectAttempt = 0;
 
 
-
 void setup()
 {
-    ISerialCommandHandler* linkHandlers[] = { &relayHandler } ;
-    size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
-    commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
+	ISerialCommandHandler* linkHandlers[] = { &relayHandler, &soundHandler } ;
+	size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
+	commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
-    ISerialCommandHandler* computerHandlers[] = { &relayHandler };
-    size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
-    commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
+	ISerialCommandHandler* computerHandlers[] = { &relayHandler, &soundHandler, &configHandler };
+	size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
+	commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 
-    InitializeSerial(COMPUTER_SERIAL, 115200, true);
-    InitializeSerial(LINK_SERIAL, 9600, true);
+	InitializeSerial(COMPUTER_SERIAL, 115200, true);
+	InitializeSerial(LINK_SERIAL, 9600, true);
 
-    commandMgrComputer.sendCommand("INIT", "Initializing");
+	soundManager.configUpdated(ConfigManager::getConfigPtr());
 
-    // water sensor
-    pinMode(WaterSensorActivePin, OUTPUT);
-    digitalWrite(WaterSensorActivePin, LOW);
-    relayHandler.setup();
+	// water sensor
+	pinMode(WaterSensorActivePin, OUTPUT);
+	digitalWrite(WaterSensorActivePin, LOW);
+	relayHandler.setup();
 
-    commandMgrComputer.sendCommand("INIT", "Initialized");
+	commandMgrComputer.sendCommand(SystemInitialized, "");
 }
 
 void loop() 
 {
-    unsigned long now = millis();
-    reconnectSerial(now);
-    commandMgrComputer.readCommands();
-    commandMgrLink.readCommands();
+	unsigned long now = millis();
+	commandMgrComputer.readCommands();
+	commandMgrLink.readCommands();
+	soundManager.update();
 
-    getWaterSensorValue(now);
-    readDHT11Sensor(now);
+	getWaterSensorValue(now);
+	readDHT11Sensor(now);
 
-    delay(DefaultDelay);
+	delay(DefaultDelay);
 }
 
 void getWaterSensorValue(unsigned long currTime)
 {
-    if (currTime > nextWaterSensorCheck)
-    {
-        if (waterPumpQueue.isFull())
-          waterPumpQueue.dequeue();
+	if (currTime > nextWaterSensorCheck)
+	{
+		if (waterPumpQueue.isFull())
+		  waterPumpQueue.dequeue();
 
-        digitalWrite(WaterSensorActivePin, HIGH);
+		digitalWrite(WaterSensorActivePin, HIGH);
 
-        delay(10);
-        int sensorValue = analogRead(WaterSensorPin);
-        waterPumpQueue.enqueue(sensorValue);
+		delay(10);
+		int sensorValue = analogRead(WaterSensorPin);
+		waterPumpQueue.enqueue(sensorValue);
 
-        digitalWrite(WaterSensorActivePin, LOW);
+		digitalWrite(WaterSensorActivePin, LOW);
 
-        nextWaterSensorCheck = currTime + SensorCheckIntervalMs;
-        commandMgrLink.sendCommand("WTR", String(waterPumpQueue.average()));
+		nextWaterSensorCheck = currTime + SensorCheckIntervalMs;
+		commandMgrLink.sendCommand(SensorWaterLevel, String(waterPumpQueue.average()));
 
-        commandMgrComputer.sendDebug(String(sensorValue), "WTRLVL");
-        commandMgrComputer.sendDebug(String(waterPumpQueue.average()), "WTRAVG");
-    }
+		commandMgrComputer.sendDebug(String(sensorValue), F("WTRLVL"));
+		commandMgrComputer.sendDebug(String(waterPumpQueue.average()), F("WTRAVG"));
+	}
 }
 
 void readDHT11Sensor(unsigned long currTime)
 {
-    if (currTime > nextWeatherSensorCheck)
-    {
-        dht11Sensor.read(TempSensorPin);
-        commandMgrComputer.sendDebug(String(dht11Sensor.humidity, 1), "Humidity");
-        commandMgrComputer.sendDebug(String(dht11Sensor.temperature, 1), "Temperature");
-        float humidity = dht11Sensor.humidity;
-        float tempCelsius = dht11Sensor.temperature;
+	if (currTime > nextWeatherSensorCheck)
+	{
+		dht11Sensor.read(TempSensorPin);
+		commandMgrComputer.sendDebug(String(dht11Sensor.humidity, 1), F("Humidity"));
+		commandMgrComputer.sendDebug(String(dht11Sensor.temperature, 1), F("Temperature"));
+		float humidity = dht11Sensor.humidity;
+		float tempCelsius = dht11Sensor.temperature;
 
-        nextWeatherSensorCheck = currTime + SensorCheckIntervalMs;
+		nextWeatherSensorCheck = currTime + SensorCheckIntervalMs;
 
-        commandMgrLink.sendCommand("TMP", String(tempCelsius, 1));
-        commandMgrLink.sendCommand("HUM", String(humidity, 0));
-    }
+		commandMgrLink.sendCommand(SensorTemperature, String(tempCelsius, 1));
+		commandMgrLink.sendCommand(SensorHumidity, String(humidity, 0));
+	}
 }
 
 void onComputerCommandReceived(SerialCommandManager* mgr)
 {
-    commandMgrComputer.sendError(mgr->getRawMessage(), "STATCMD");
+	commandMgrComputer.sendError(mgr->getRawMessage(), F("STATCMD"));
 }
 
 void onLinkCommandReceived(SerialCommandManager* mgr)
 {
-    commandMgrComputer.sendError(mgr->getRawMessage(), "STATLNK");
+	commandMgrComputer.sendError(mgr->getRawMessage(), F("STATLNK"));
 }
 
 void InitializeSerial(HardwareSerial& serialPort, unsigned long baudRate, bool waitForConnection)
 {
-    serialPort.begin(baudRate);
+	serialPort.begin(baudRate);
 
-    if (waitForConnection)
-    {
-        unsigned long leave = millis() + serialInitTimeoutMs;
+	if (waitForConnection)
+	{
+		unsigned long leave = millis() + SerialInitTimeoutMs;
 
-        while (!serialPort && millis() < leave)
-            delay(10);
-    }
-}
+		while (!serialPort && millis() < leave)
+			delay(10);
 
-void reconnectSerial(unsigned long now)
-{
-    if (now < lastSerialConnectAttempt + serialReconnectMs)
-        return;
-
-    lastSerialConnectAttempt = now;
-
-    if (!COMPUTER_SERIAL)
-    {
-        InitializeSerial(COMPUTER_SERIAL, 115200, true);
-    }
-
-    if (!LINK_SERIAL)
-    {
-        InitializeSerial(LINK_SERIAL, 9600, true);
-    }
+		if (serialPort)
+			delay(100);
+	}
 }

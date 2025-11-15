@@ -113,6 +113,24 @@ void HomePage::updateAllDisplayItems()
 // Handle touch events for buttons
 void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+    Config* config = getConfig();
+
+    if (!config)
+    {
+        return;
+    }
+
+
+    if (config->hornRelayIndex < DefaultValue &&
+        compId - 1 == config->hornRelayIndex)
+    {
+        // relay button is configured to sound system (horn) and will be
+        // controlled via own command methods from sound pages
+        setPage(PageSoundSignals);
+        return;
+    }
+
+
     // Map component ID to button index
     uint8_t buttonIndex = InvalidButtonIndex;
     switch (compId)
@@ -136,9 +154,8 @@ void HomePage::handleTouch(uint8_t compId, uint8_t eventType)
             return;
     }
 
-    Config* config = getConfig();
     // Check if we have a valid config and the button is mapped to a relay
-    if (!config || buttonIndex >= ConfigHomeButtons)
+    if (buttonIndex >= ConfigHomeButtons)
         return;
 
     uint8_t relayIndex = _slotToRelay[buttonIndex];
@@ -339,7 +356,7 @@ void HomePage::updateTemperature()
         return;
     }
 
-    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + CelciusSuffix); // one decimal place 
+    sendText(ControlTemperature, String(_lastTemp, 1) + String((char)176) + CelsiusSuffix); // one decimal place 
 }
 
 void HomePage::updateHumidity()

@@ -2,8 +2,8 @@
 #include "SoundOtherPage.h"
 
 // Nextion Names/Ids on current Page
-constexpr uint8_t BtnSoS = 2; // b3
-constexpr uint8_t BtnBack = 3; // b4
+constexpr uint8_t BtnSoS = 3; // b3
+constexpr uint8_t BtnBack = 2; // b4
 
 constexpr unsigned long RefreshIntervalMs = 10000;
 
@@ -23,12 +23,14 @@ void SoundOtherPage::begin()
 
 void SoundOtherPage::refresh(unsigned long now)
 {
-
+	(void)now;
 }
 
 // Handle touch events for buttons
 void SoundOtherPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+	(void)eventType;
+
     switch (compId)
     {
     case BtnSoS:

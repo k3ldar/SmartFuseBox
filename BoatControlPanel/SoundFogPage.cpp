@@ -22,12 +22,14 @@ void SoundFogPage::begin()
 
 void SoundFogPage::refresh(unsigned long now)
 {
-
+	(void)now;
 }
 
 // Handle touch events for buttons
 void SoundFogPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+	(void)eventType;
+
     switch (compId)
     {
     case BtnFogHorn:

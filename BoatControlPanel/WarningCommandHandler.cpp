@@ -28,7 +28,7 @@ bool WarningCommandHandler::handleCommand(SerialCommandManager* sender, const St
 
     if (cmd == WarningsActive && paramCount == 0)
     {
-        int count = 0;
+        uint8_t count = 0;
         for (uint8_t i = 1; i < WarningCount; i++)
         {
             WarningType type = static_cast<WarningType>(i);

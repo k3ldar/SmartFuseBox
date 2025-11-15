@@ -17,6 +17,8 @@ enum class VesselType : uint8_t {
 // - relayLongNames[8][21] (20 chars + null each)
 // - homePageMapping[4] (values 0..7 or 0xFF for empty)
 // - homePageButtonImage[4] (button color image IDs)
+// - vesselType (VesselType)
+// - hornRelayIndex (uint8_t) 0..7 or 0xFF = none
 // - checksum (uint16_t)
 //
 // Keep struct packed and stable. Increase 'VERSION' when you change layout.
