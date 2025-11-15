@@ -1,49 +1,55 @@
 #include "SoundManager.h"
-#include "BoatElectronicsConstants.h"
+#include "StaticElectricConstants.h"
 
 // Define sound patterns according to COLREGS
 // Maneuvering Signals (COLREGS Rule 34 - one-shot, non-repeating)
-const uint16_t PATTERN_STARBOARD[] = {SHORT_BLAST_MS};
-const uint16_t PATTERN_PORT[] = {SHORT_BLAST_MS, SHORT_BLAST_MS};
-const uint16_t PATTERN_ASTERN[] = {SHORT_BLAST_MS, SHORT_BLAST_MS, SHORT_BLAST_MS};
-const uint16_t PATTERN_DANGER[] = {SHORT_BLAST_MS, SHORT_BLAST_MS, SHORT_BLAST_MS, SHORT_BLAST_MS, SHORT_BLAST_MS};
+const uint16_t PatternStarboard[] = {SoundBlastShortMs};
+const uint16_t PatternPort[] = {SoundBlastShortMs, SoundBlastShortMs};
+const uint16_t PatternAstern[] = {SoundBlastShortMs, SoundBlastShortMs, SoundBlastShortMs};
+const uint16_t PatternDanger[] = {SoundBlastShortMs, SoundBlastShortMs, SoundBlastShortMs, SoundBlastShortMs, SoundBlastShortMs};
 
 // Narrow Channel / Overtaking Signals (COLREGS Rule 34 - one-shot)
-const uint16_t PATTERN_OVERTAKE_STARBOARD[] = {LONG_BLAST_MS, LONG_BLAST_MS, SHORT_BLAST_MS};
-const uint16_t PATTERN_OVERTAKE_PORT[] = {LONG_BLAST_MS, LONG_BLAST_MS, SHORT_BLAST_MS, SHORT_BLAST_MS};
-const uint16_t PATTERN_OVERTAKE_CONSENT[] = {LONG_BLAST_MS, SHORT_BLAST_MS, LONG_BLAST_MS, SHORT_BLAST_MS};
+const uint16_t PatternOvertakeStarboard[] = {SoundBlastLongMs, SoundBlastLongMs, SoundBlastShortMs};
+const uint16_t PatternOvertakePort[] = {SoundBlastLongMs, SoundBlastLongMs, SoundBlastShortMs, SoundBlastShortMs};
+const uint16_t PatternOvertakeConsent[] = {SoundBlastLongMs, SoundBlastShortMs, SoundBlastLongMs, SoundBlastShortMs};
 
 // Fog Signals (COLREGS Rule 35 - repeating every 2 minutes)
-const uint16_t PATTERN_FOG[] = {LONG_BLAST_MS};
+const uint16_t PatternFog[] = {SoundBlastLongMs};
 
 // SOS (International distress - repeating every 10 seconds)
-const uint16_t PATTERN_SOS[] = {SHORT_BLAST_MS, SHORT_BLAST_MS, SHORT_BLAST_MS, 
-                                 LONG_BLAST_MS, LONG_BLAST_MS, LONG_BLAST_MS,
-                                 SHORT_BLAST_MS, SHORT_BLAST_MS, SHORT_BLAST_MS};
+const uint16_t PatternSos[] = {MorseCodeShortMs, MorseCodeShortMs, MorseCodeShortMs, 
+								 MorseCodeLongMs, MorseCodeLongMs, MorseCodeLongMs,
+								 MorseCodeShortMs, MorseCodeShortMs, MorseCodeShortMs};
 
 // Test pattern
-const uint16_t PATTERN_TEST[] = {SHORT_BLAST_MS};
+const uint16_t PatternTest[] = {SoundBlastShortMs};
 
 // Pattern lookup table
-const SoundPattern SOUND_PATTERNS[] = {
-	{nullptr, 0, NO_REPEAT},                          // None
-	{PATTERN_SOS, 9, SOS_REPEAT_MS},                  // Sos
-	{PATTERN_FOG, 1, FOG_REPEAT_MS},                  // Fog
-	{PATTERN_STARBOARD, 1, NO_REPEAT},                // MoveStarboard
-	{PATTERN_PORT, 2, NO_REPEAT},                     // MovePort
-	{PATTERN_ASTERN, 3, NO_REPEAT},                   // MoveAstern
-	{PATTERN_DANGER, 5, NO_REPEAT},                   // MoveDanger
-	{PATTERN_OVERTAKE_STARBOARD, 3, NO_REPEAT},       // OvertakeStarboard
-	{PATTERN_OVERTAKE_PORT, 4, NO_REPEAT},            // OvertakePort
-	{PATTERN_OVERTAKE_CONSENT, 4, NO_REPEAT},         // OvertakeConsent
-	{PATTERN_DANGER, 5, NO_REPEAT},                   // OvertakeDanger (same as MoveDanger)
-	{PATTERN_TEST, 1, NO_REPEAT}                      // Test
+const SoundPattern SoundPatterns[] = {
+	{nullptr, 0, NoRepeat, 0},                                  // None
+	{PatternSos, 9, SosRepeatMs, MorseCodeGapMs},               // Sos
+	{PatternFog, 1, FogRepeatMs, SoundBlastGapMs},              // Fog
+	{PatternStarboard, 1, NoRepeat, SoundBlastGapMs},           // MoveStarboard
+	{PatternPort, 2, NoRepeat, SoundBlastGapMs},                // MovePort
+	{PatternAstern, 3, NoRepeat, SoundBlastGapMs},              // MoveAstern
+	{PatternDanger, 5, NoRepeat, SoundBlastGapMs},              // MoveDanger
+	{PatternOvertakeStarboard, 3, NoRepeat, SoundBlastGapMs},   // OvertakeStarboard
+	{PatternOvertakePort, 4, NoRepeat, SoundBlastGapMs},        // OvertakePort
+	{PatternOvertakeConsent, 4, NoRepeat, SoundBlastGapMs},     // OvertakeConsent
+	{PatternDanger, 5, NoRepeat, SoundBlastGapMs},              // OvertakeDanger
+	{PatternTest, 1, NoRepeat, SoundBlastGapMs}                 // Test
 };
 
 SoundManager::SoundManager()
-	: _isPlaying(false), _soundType(SoundType::None), _state(SoundState::Idle),
-	  _currentBlastIndex(0), _stateStartTime(0), _patternStartTime(0), _currentPattern(nullptr)
+	: _isPlaying(false), _soundType(SoundType::None), _state(SoundState::Idle), _soundStartDelay(0),
+	_soundRelayIndex(DefaultValue), _currentBlastIndex(0), _stateStartTime(0), _currentPattern(nullptr)
 {
+	Config* config = ConfigManager::getConfigPtr();
+
+	if (config != nullptr)
+	{
+		_soundStartDelay = config->soundStartDelayMs;
+	}
 }
 
 void SoundManager::playSound(const SoundType soundType)
@@ -69,11 +75,12 @@ void SoundManager::playSound(const SoundType soundType)
 	}
 }
 
-void SoundManager::update(unsigned long currentTime)
+void SoundManager::update()
 {
 	if (!_isPlaying || !_currentPattern)
 		return;
 
+	unsigned long currentTime = millis();  // Always get fresh time
 	unsigned long elapsed = currentTime - _stateStartTime;
 
 	switch (_state)
@@ -84,7 +91,7 @@ void SoundManager::update(unsigned long currentTime)
 			uint16_t blastDuration = _currentPattern->durations[_currentBlastIndex];
 			if (elapsed >= blastDuration)
 			{
-				// TODO: Turn off sound output (e.g., digitalWrite(SOUND_PIN, LOW))
+				stopSound();
 				
 				_currentBlastIndex++;
 				
@@ -116,10 +123,10 @@ void SoundManager::update(unsigned long currentTime)
 		case SoundState::BlastGap:
 		{
 			// Wait for gap duration
-			if (elapsed >= BLAST_GAP_MS)
+			if (elapsed >= _currentPattern->gapDuration)
 			{
 				// Start next blast
-				// TODO: Turn on sound output (e.g., digitalWrite(SOUND_PIN, HIGH))
+				startSound();
 				_state = SoundState::BlastOn;
 				_stateStartTime = currentTime;
 			}
@@ -133,10 +140,9 @@ void SoundManager::update(unsigned long currentTime)
 			{
 				// Restart pattern
 				_currentBlastIndex = 0;
-				_patternStartTime = currentTime;
 				_stateStartTime = currentTime;
 				_state = SoundState::BlastOn;
-				// TODO: Turn on sound output (e.g., digitalWrite(SOUND_PIN, HIGH))
+				startSound();
 			}
 			break;
 		}
@@ -151,32 +157,58 @@ void SoundManager::startPattern(const SoundPattern* pattern)
 	_currentPattern = pattern;
 	_currentBlastIndex = 0;
 	_state = SoundState::BlastOn;
-	_stateStartTime = millis();
-	_patternStartTime = _stateStartTime;
+	unsigned long currentTime = millis();
+	_stateStartTime = currentTime + _soundStartDelay;
 	_isPlaying = true;
 	
-	// TODO: Turn on sound output (e.g., digitalWrite(SOUND_PIN, HIGH))
+	startSound();
 }
 
 void SoundManager::stopPattern()
 {
-	// TODO: Turn off sound output (e.g., digitalWrite(SOUND_PIN, LOW))
+	stopSound();
 	
 	_currentPattern = nullptr;
 	_currentBlastIndex = 0;
 	_state = SoundState::Idle;
 	_stateStartTime = 0;
-	_patternStartTime = 0;
 	_isPlaying = false;
 	_soundType = SoundType::None;
+}
+
+void SoundManager::startSound()
+{
+	if (_soundRelayIndex != DefaultValue && _soundRelayIndex < TotalRelays)
+	{
+		uint8_t relayPin = Relays[_soundRelayIndex];
+		digitalWrite(relayPin, LOW); // Activate relay
+	}
+}
+
+void SoundManager::stopSound()
+{
+	if (_soundRelayIndex != DefaultValue && _soundRelayIndex < TotalRelays)
+	{
+		uint8_t relayPin = Relays[_soundRelayIndex];
+		digitalWrite(relayPin, HIGH); // Deactivate relay
+	}
 }
 
 const SoundPattern* SoundManager::getPattern(SoundType soundType) const
 {
 	uint8_t index = static_cast<uint8_t>(soundType);
-	if (index < sizeof(SOUND_PATTERNS) / sizeof(SOUND_PATTERNS[0]))
+	if (index < sizeof(SoundPatterns) / sizeof(SoundPatterns[0]))
 	{
-		return &SOUND_PATTERNS[index];
+		return &SoundPatterns[index];
 	}
 	return nullptr;
+}
+
+void SoundManager::configUpdated(Config* config)
+{
+	if (config != nullptr)
+	{
+		_soundStartDelay = config->soundStartDelayMs;
+		_soundRelayIndex = config->hornRelayIndex;
+	}
 }

@@ -32,12 +32,14 @@ void SoundOvertakingPage::begin()
 
 void SoundOvertakingPage::refresh(unsigned long now)
 {
-
+    (void)now;
 }
 
 // Handle touch events for buttons
 void SoundOvertakingPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+	(void)eventType;
+
     switch (compId)
     {
     case BtnStarboard:

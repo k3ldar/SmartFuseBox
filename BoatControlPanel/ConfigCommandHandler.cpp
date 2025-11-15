@@ -124,13 +124,13 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             uint8_t button = params[0].key.toInt();
             uint8_t relay = params[0].value.toInt(); // if value empty, toInt() -> 0
 
-            if (button < 0 || button >= ConfigHomeButtons)
+            if (button >= ConfigHomeButtons)
             {
                 sendAckErr(sender, cmd, F("Button out of range"), &params[0]);
                 return true;
             }
 
-            if ((relay < 0 || relay >= (int)ConfigRelayCount) && relay != DefaultValue)
+            if (relay >= (int)ConfigRelayCount && relay != DefaultValue)
             {
                 sendAckErr(sender, cmd, F("Relay out of range (or 255 to clear)"), &params[0]);
                 return true;
@@ -149,13 +149,13 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         // Expect "MAP <button>=<color>" where button 0..3, image 0..5 (or 255 to unmap)
         if (paramCount >= 1)
         {
-            int button = params[0].key.toInt();
-            int buttonColor = params[0].value.toInt(); 
+            uint8_t button = params[0].key.toInt();
+            uint8_t buttonColor = params[0].value.toInt();
 
             if (buttonColor < 0xFF)
 			    buttonColor += 2; // Adjust to match BTN_COLOR_* constants (2..7), 255 to clear
 
-            if (button < 0 || button >= (int)ConfigRelayCount)
+            if (button >= (int)ConfigRelayCount)
             {
                 sendAckErr(sender, cmd, F("Button out of range"), &params[0]);
                 return true;
@@ -183,7 +183,7 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
         {
             uint8_t relay = params[0].value.toInt(); // if value empty, toInt() -> 0
 
-            if ((relay < 0 || relay >= (int)ConfigRelayCount) && relay != DefaultValue)
+            if (relay >= (int)ConfigRelayCount && relay != DefaultValue)
             {
                 sendAckErr(sender, cmd, F("Relay out of range (or 255 to clear)"), &params[0]);
                 return true;
@@ -237,6 +237,12 @@ bool ConfigCommandHandler::handleCommand(SerialCommandManager* sender, const Str
             String colorMapping = String(i) + Equals + String(cfg->buttonImage[i]);
             sender->sendCommand(ConfigSetButtonColor, colorMapping);
         }
+
+		// C7 Boat type
+		sender->sendCommand(ConfigBoatType, String(static_cast<uint8_t>(cfg->vesselType)));
+
+		// C8 Sound relay ID
+		sender->sendCommand(ConfigSoundRelayId, String(cfg->hornRelayIndex));
 
         sendAckOk(sender, cmd);
     }

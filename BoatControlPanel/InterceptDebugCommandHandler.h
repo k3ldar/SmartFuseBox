@@ -13,12 +13,17 @@ public:
 
     bool supportsCommand(const String& command) const override
     {
+		(void)command;
+
         // This handler intercepts all commands for debugging purposes
         return true;
     }
 
     bool handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount) override
     {
+		(void)command;
+		(void)params;
+		(void)paramCount;
         _computerCommandManager->sendCommand(sender->getRawMessage(), "");
 		return false; // Indicate that we did not fully handle the command
     }

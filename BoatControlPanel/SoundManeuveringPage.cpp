@@ -27,12 +27,14 @@ void SoundManeuveringPage::begin()
 
 void SoundManeuveringPage::refresh(unsigned long now)
 {
-
+    (void)now;
 }
 
 // Handle touch events for buttons
 void SoundManeuveringPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+	(void)eventType;
+
     switch (compId)
     {
         case BtnStarboard:

@@ -23,12 +23,14 @@ void SoundEmergencyPage::begin()
 
 void SoundEmergencyPage::refresh(unsigned long now)
 {
-
+	(void)now;
 }
 
 // Handle touch events for buttons
 void SoundEmergencyPage::handleTouch(uint8_t compId, uint8_t eventType)
 {
+	(void)eventType;
+
     switch (compId)
     {
     case BtnSoS:

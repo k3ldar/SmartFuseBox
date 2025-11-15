@@ -1,4 +1,6 @@
 #pragma once
+
+#include <Arduino.h>
 #include "BaseCommandHandler.h"
 #include "SoundManager.h"
 

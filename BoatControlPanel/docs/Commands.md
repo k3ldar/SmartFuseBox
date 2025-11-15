@@ -24,6 +24,7 @@ These are commands used to configure the system settings and can only be sent fr
 | `C6` — Map home button color | `C6:0=4` (map button 1 to Red when activated) — `C6:1=255` (unmap colors) | Map a home-page button to a color when activated (on). Param format: `<slot>:<relay>`. `slot` must be 0..3 (`ConfigManager::HOME_SLOTS`). `relay` must be 0..7 or `255` to clear/unmap. |
 | `C7` — Set vessel type | `C7:v=1` | Set the vessel type. Param format: `v=<type>`. Possible values for `<type>` are: 0 (Motor), 1 (Sail), 2 (Fishing), 3 (Yacht). Uses enum values as defined in `Config.h`. Invalid or missing value → error. |
 | `C8` — Sound relay button | `C8:v=3` (map) — `C8:v=255` (unmap) | Map the sound system (horn) to a relay. Param format: `<value>:<relay>`. `button` must be 0..7 (`RELAY_COUNT`). `relay` must be 0..7 or `255` to clear/unmap. |
+| `C9` — Sound delay Start | `C9:v=0xFF` | Sets the delay before the sound is started in milliseconds, allows other processing to continue so as sounds are not cut off. Invalid or missing value → error. |
 
 Common error responses you may see: `Missing param`, `Missing params`, `Missing name`, `Empty name`, `Index out of range`, `Slot out of range`, `Relay out of range (or 255 to clear)`, `EEPROM commit failed`, `Unknown config command`.
 
@@ -79,7 +80,7 @@ These commands are used to activate, query or deactivate signal sounds (Fog Horn
 | Command | Example | Purpose |
 |---|---|---|
 | `H0` — Cancel All | `H0` | Cancels any sound signals immediately.. Param format: No Parameters. |
-| `H1` — Is Active | `H1` | Retrieves active status of sound signals in form of <value>=<bool>. |
+| `H1` — Is Active | `H1` | Retrieves active status of sound signals in form of <SoundType>=<SoundState>. |
 | `H2` — Danger | `H2` | Activates SOS horn sound until cancelled ...---... Param format: No Parameters.  |
 | `H3` — Fog sound | `H3` | Activates Fog sound (depending on boat type) every 2 minutes until cancelled. Param format: No Parameters. |
 | `H4` — Maneuver Starboard | `H4` | Activates maneuver starboard sound. Param format: No Parameters. |

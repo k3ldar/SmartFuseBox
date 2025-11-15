@@ -21,6 +21,9 @@ const String* SystemCommandHandler::supportedCommands(size_t& count) const
 
 bool SystemCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
+    (void)params;
+    (void)paramCount;
+
     String cmd = command;
     cmd.trim();
 

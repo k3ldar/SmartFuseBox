@@ -8,7 +8,8 @@
 #include "NextionIds.h"
 
 // Update type constants for external updates
-enum class PageUpdateType : uint8_t {
+enum class PageUpdateType : uint8_t
+{
     None = 0x00,
     Warning = 0x01,
     RelayState = 0x02,

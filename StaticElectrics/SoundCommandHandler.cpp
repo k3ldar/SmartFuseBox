@@ -38,6 +38,8 @@ const String* SoundCommandHandler::supportedCommands(size_t& count) const
 
 bool SoundCommandHandler::handleCommand(SerialCommandManager* sender, const String command, const StringKeyValue params[], int paramCount)
 {
+	(void)params;
+
     if (_soundManager == nullptr)
     {
         sendAckErr(sender, command, "Sound manager not initialized");
@@ -61,7 +63,7 @@ bool SoundCommandHandler::handleCommand(SerialCommandManager* sender, const Stri
     }
     else if (cmd == SoundIsActive)
     {
-        StringKeyValue param = { "v", _soundManager->isPlaying() ? "1" : "0" };
+        StringKeyValue param = { String(static_cast<uint8_t>(_soundManager->getCurrentSoundType())), String(static_cast<uint8_t>(_soundManager->getCurrentSoundState())) };
         sendAckOk(sender, cmd, &param);
     }
     else if (cmd == SoundDangerSos)
