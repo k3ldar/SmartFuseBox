@@ -1,4 +1,3 @@
-#include "ConfigCommandHandler.h"
 #include <Arduino.h>
 #include <stdint.h>
 #include <UnoWiFiDevEd.h>
@@ -9,6 +8,7 @@
 #include "StaticElectricConstants.h"
 #include "Config.h"
 #include "ConfigManager.h"
+#include "ConfigCommandHandler.h"
 #include "Queue.h"
 #include "SoundManager.h"
 #include "SoundCommandHandler.h"
@@ -43,6 +43,7 @@ SoundManager soundManager;
 
 RelayCommandHandler relayHandler(&commandMgrComputer, &commandMgrLink, Relays, TotalRelays);
 SoundCommandHandler soundHandler(&commandMgrComputer, &commandMgrLink, &soundManager);
+ConfigCommandHandler configHandler(&soundManager);
 
 unsigned long nextWaterSensorCheck = 5000;
 Queue waterPumpQueue(15);
@@ -59,7 +60,7 @@ void setup()
 	size_t linkHandlerCount = sizeof(linkHandlers) / sizeof(linkHandlers[0]);
 	commandMgrLink.registerHandlers(linkHandlers, linkHandlerCount);
 
-	ISerialCommandHandler* computerHandlers[] = { &relayHandler, &soundHandler };
+	ISerialCommandHandler* computerHandlers[] = { &relayHandler, &soundHandler, &configHandler };
 	size_t computerHandlerCount = sizeof(computerHandlers) / sizeof(computerHandlers[0]);
 	commandMgrComputer.registerHandlers(computerHandlers, computerHandlerCount);
 

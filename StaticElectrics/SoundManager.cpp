@@ -80,11 +80,24 @@ void SoundManager::update()
 	if (!_isPlaying || !_currentPattern)
 		return;
 
-	unsigned long currentTime = millis();  // Always get fresh time
+	unsigned long currentTime = millis();
 	unsigned long elapsed = currentTime - _stateStartTime;
 
 	switch (_state)
 	{
+		case SoundState::StartDelay:
+		{
+			// Wait for startup delay to prevent relay/horn clipping
+			if (elapsed >= _soundStartDelay)
+			{
+				// Delay complete, start first blast
+				_state = SoundState::BlastOn;
+				_stateStartTime = currentTime;
+				startSound();
+			}
+			break;
+		}
+
 		case SoundState::BlastOn:
 		{
 			// Check if current blast duration is complete
@@ -140,9 +153,8 @@ void SoundManager::update()
 			{
 				// Restart pattern
 				_currentBlastIndex = 0;
-				_stateStartTime = currentTime;
 				_state = SoundState::BlastOn;
-				startSound();
+				_stateStartTime = currentTime;
 			}
 			break;
 		}
@@ -156,12 +168,9 @@ void SoundManager::startPattern(const SoundPattern* pattern)
 {
 	_currentPattern = pattern;
 	_currentBlastIndex = 0;
-	_state = SoundState::BlastOn;
-	unsigned long currentTime = millis();
-	_stateStartTime = currentTime + _soundStartDelay;
+	_state = SoundState::StartDelay;
+	_stateStartTime = millis();
 	_isPlaying = true;
-	
-	startSound();
 }
 
 void SoundManager::stopPattern()

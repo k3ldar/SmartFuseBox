@@ -13,6 +13,7 @@ struct SoundPattern
 enum class SoundState : uint8_t
 {
 	Idle,
+	StartDelay,
 	BlastOn,
 	BlastGap,
 	WaitingRepeat

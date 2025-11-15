@@ -19,7 +19,9 @@ RelayCommandHandler::RelayCommandHandler(SerialCommandManager* commandMgrCompute
     _relayStatus = new bool[_relayCount];
 
     for (uint8_t i = 0; i < totalRelays; i++)
+    {
         _relayStatus[i] = false;
+    }
 }
 
 RelayCommandHandler::~RelayCommandHandler()
@@ -181,10 +183,14 @@ void RelayCommandHandler::setup()
 RelayResult RelayCommandHandler::setRelayStatus(uint8_t relayIndex, bool isOn)
 {
     if (relayIndex >= _relayCount)
+    {
         return RelayResult::InvalidIndex;
+    }
 
-	if (relayIndex == _reservedSoundRelay)
-		return RelayResult::Reserved;
+    if (relayIndex == _reservedSoundRelay)
+    {
+        return RelayResult::Reserved;
+    }
 
     _relayStatus[relayIndex] = isOn;
     digitalWrite(_relays[relayIndex], isOn ? LOW : HIGH);
@@ -195,7 +201,9 @@ RelayResult RelayCommandHandler::setRelayStatus(uint8_t relayIndex, bool isOn)
 uint8_t RelayCommandHandler::getRelayStatus(uint8_t relayIndex) const
 {
     if (relayIndex >= _relayCount)
+    {
         return 0xFF;
+    }
 
 	return _relayStatus[relayIndex] ? 1 : 0;
 }

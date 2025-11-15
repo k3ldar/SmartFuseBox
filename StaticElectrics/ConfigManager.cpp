@@ -1,9 +1,6 @@
 #include "ConfigManager.h"
 #include <EEPROM.h>
 
-constexpr char DefaultBoatName[] = "My Boat";
-constexpr char RelayNameShort[] = "R %u";
-constexpr char RelayNameLong[] = "Relay %u";
 // Static storage (use the shared Config from Config.h)
 Config ConfigManager::_cfg;
 
@@ -80,7 +77,7 @@ void ConfigManager::resetToDefaults()
 
     _cfg.vesselType = VesselType::Motor;
     _cfg.hornRelayIndex = 0xFF; // none
-    _cfg.soundStartDelayMs = 0xFF; // 255ms delay
+	_cfg.soundStartDelayMs = 300; // 300ms delay to avoid relay/horn clipping
 
     // compute checksum
     _cfg.checksum = 0;
